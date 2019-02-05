@@ -5,8 +5,11 @@
 
 #include <stdio.h>
 
-int main(int argc, const char * argv[]) {
-    // insert code here...
-    printf("Hello, World!\n");
-    return 0;
-}
+struct message_s
+{
+    unsigned char protocol[5];      /* protocol string (5 bytes) */
+    unsigned char type;             /* type (1 byte) */
+    unsigned int length;            /* length (header + payload) (4 bytes) */
+} __attribute__ ((packed));
+
+typedef struct message_s message_s;

@@ -11,4 +11,4 @@ client: myftpclient.c
 
 clean:
 	rm server
-	rm client	
+	rm client		
