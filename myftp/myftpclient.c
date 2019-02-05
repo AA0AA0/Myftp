@@ -3,7 +3,7 @@
 //  myftp
 //
 
-#include "myftp.h"
+# include "myftp.h"
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
