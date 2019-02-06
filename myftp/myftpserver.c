@@ -41,14 +41,15 @@ int main(int argc, char** argv){
     }
     while(1){
         char buff[100];
+        struct message_s recv_message;
         int len;
-        if((len=recv(client_sd,buff,sizeof(buff),0))<0){
+        if((len=recv(client_sd,(char *) &recv_message,sizeof(buff),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
         buff[len]='\0';
         printf("RECEIVED INFO: ");
-        if(strlen(buff)!=0)printf("%s\n",buff);
+        if(strlen(buff)!=0)printf("%s\n",recv_message);
         if(strcmp("exit",buff)==0){
             close(client_sd);
             break;
