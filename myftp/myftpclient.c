@@ -3,7 +3,7 @@
 //  myftp
 //
 
-#include "myftp.h"
+# include "myftp.h"
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
@@ -19,18 +19,34 @@
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
     struct sockaddr_in server_addr;
+    /*
+     struct sockaddr_in {
+     short            sin_family;   // e.g. AF_INET
+     unsigned short   sin_port;     // e.g. htons(3490)
+     struct in_addr   sin_addr;     // see struct in_addr, below
+     char             sin_zero[8];  // zero this if you want to
+     };
+     struct in_addr {
+     unsigned long s_addr;  // load with inet_aton()
+     };
+    */
     memset(&server_addr,0,sizeof(server_addr));
     server_addr.sin_family=AF_INET;
-    server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
-    server_addr.sin_port=htons(PORT);
+    /*Change from "127.0.0.1" to argv[1]*/
+    server_addr.sin_addr.s_addr=inet_addr(argv[1]);
+    /*Change from PORT to (unsigned short)atoi(argv[2])*/
+    server_addr.sin_port=htons((unsigned short)atoi(argv[2]));
     if(connect(sd,(struct sockaddr *)&server_addr,sizeof(server_addr))<0){
         printf("connection error: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
-    int le=0x12345678;
-    printf("%x\n",le);
-    le=htonl(le);
-    printf("%x\n",le);
+    /*
+     Change From host to network
+     int le=0x12345678;
+     printf("%x\n",le);
+     le=htonl(le);
+     printf("%x\n",le);
+    */
     while(1){
         char buff[100];
         memset(buff,0,100);
