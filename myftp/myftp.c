@@ -14,7 +14,6 @@ struct message_s
     unsigned char type;             /* type (1 byte) */
     unsigned int length;            /* length (header + payload) (4 bytes) */
 } __attribute__ ((packed));
-
 typedef struct message_s message_s;
 
 int create_directory;
@@ -24,8 +23,10 @@ int main ()
     create_directory = mkdir("data/", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (create_directory != 0)
     {
-        printf("Unsuccessful!");
+        printf("Error in creating directory!");
     }
+    
+    opendir("data");
 }
 
 
