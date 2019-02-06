@@ -43,7 +43,6 @@ int main(int argc, char** argv){
         exit(0);
     }
     while(1){
-        char buff[100];
         struct message_s recv_message;
         memset(&recv_message,0,sizeof(recv_message));
         int len;
@@ -64,13 +63,12 @@ int main(int argc, char** argv){
         if (strcmp(recv_message.type, "0xC1") == 0) {
             put_request();
         }
-        buff[len]='\0';
         printf("RECEIVED INFO: ");
-        if(strlen(buff)!=0)printf("%s\n",recv_message);
-        if(strcmp("exit",buff)==0){
+        printf("%s\n",recv_message);
+      /*  if(strcmp("exit",buff)==0){
             close(client_sd);
             break;
-        }
+        }*/
     }
     close(sd);
     return 0;
