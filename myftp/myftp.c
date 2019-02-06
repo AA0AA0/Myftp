@@ -9,16 +9,18 @@
 #include <sys/stat.h>
 
 int create_directory;
-
+DIR *dir;
 int main ()
 {
-    create_directory = mkdir("data/", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    create_directory = mkdir("/data/", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (create_directory != 0)
     {
         printf("Error in creating directory!");
     }
     
-    opendir("data");
+    dir = opendir("/data");
+    
+    readdir(dir);
 }
 
 
