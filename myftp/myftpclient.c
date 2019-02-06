@@ -14,8 +14,6 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 
-# define PORT 12345
-
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
     struct message_s message_box;
@@ -41,6 +39,22 @@ int main(int argc, char** argv){
         printf("connection error: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
+    if (strcmp(argv[3],"list") == 0)
+    {
+        if (argc != 3)
+        {
+            printf("ERROR-list: There should be 3 args");
+            return 0;
+        }
+    }
+    if (strcmp(argv[3],"get") == 0 || strcmp(argv[3],"put") == 0)
+    {
+        if (argc != 4)
+        {
+            printf("ERROR-get/put: There should be 4 args");
+            return 0;
+        }
+    }
     /*
      Change From host to network
      int le=0x12345678;
@@ -51,14 +65,33 @@ int main(int argc, char** argv){
     while(1){
         char buff[100];
         memset(buff,0,100);
-        /*printf("%s\n",buff);*/
+        /*LIST_REQUEST*/
         if (strcmp(argv[3],"list") == 0)
         {
-            message_box.protocol = "myftp";
-            message_box.type = "0xA1";
-            message_box.length = sizeof(message_box);
+            strcpy(message_box.protocol,"myftp");
+            strcpy(message_box.type,"0xA1");
+            message_box.length = sizeof(struct message_s);
             int len;
-            if((len=send(sd,(char*)message_box,strlen((char*)message_box),0))<0)
+            if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
+            {
+                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+                exit(0);
+            }
+        }
+        /*GET_REQUEST*/
+        if (strcmp(argv[3],"get") == 0)
+        {
+            int payload_len;
+            payload_len = strlen(argv[4]);
+            if (argv[4][payload_len-1] != '\n')
+            {
+                argv[4][payload_len] == '\n';
+            }
+            strcpy(message_box.protocol,"myftp");
+            strcpy(message_box.type,"0xB1");
+            message_box.length = sizeof(struct message_s);
+            int len;
+            if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
             {
                 printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
                 exit(0);
