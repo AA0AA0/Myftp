@@ -8,14 +8,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-struct message_s
-{
-    unsigned char protocol[5];      /* protocol string (5 bytes) */
-    unsigned char type;             /* type (1 byte) */
-    unsigned int length;            /* length (header + payload) (4 bytes) */
-} __attribute__ ((packed));
-typedef struct message_s message_s;
-
 int create_directory;
 
 int main ()
