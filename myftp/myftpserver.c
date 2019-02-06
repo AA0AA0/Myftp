@@ -46,7 +46,7 @@ int main(int argc, char** argv){
         struct message_s recv_message;
         memset(&recv_message,0,sizeof(recv_message));
         int len;
-        if((len=recv(client_sd,(char *) &recv_message,sizeof(buff),0))<0){
+        if((len=recv(client_sd,(char *) &recv_message,sizeof(recv_message),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
