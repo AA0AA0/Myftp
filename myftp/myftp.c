@@ -28,9 +28,7 @@ int main ()
         printf("filename: %s", dp->d_name);
     }
     
-
-    
-    readdir(dir);
+    closedir(dir);
 }
 
 
