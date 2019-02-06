@@ -14,8 +14,6 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 
-# define PORT 12345
-
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
     struct message_s message_box;
@@ -54,11 +52,11 @@ int main(int argc, char** argv){
         /*printf("%s\n",buff);*/
         if (strcmp(argv[3],"list") == 0)
         {
-            message_box.protocol = "myftp";
-            message_box.type = "0xA1";
-            message_box.length = sizeof(message_box);
+            strcpy(message_box.protocol,"myftp");
+            strcpy(message_box.type,"0xA1");
+            message_box.length = sizeof(struct message_s);
             int len;
-            if((len=send(sd,(char*)message_box,strlen((char*)message_box),0))<0)
+            if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
             {
                 printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
                 exit(0);
