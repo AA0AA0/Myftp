@@ -18,7 +18,7 @@
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
-    message_s message_box;
+    struct message_s message_box;
     struct sockaddr_in server_addr;
     /*
      struct sockaddr_in {
