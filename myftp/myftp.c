@@ -4,6 +4,9 @@
 //
 
 #include <stdio.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 struct message_s
 {
@@ -13,4 +16,17 @@ struct message_s
 } __attribute__ ((packed));
 
 typedef struct message_s message_s;
+
+int create_directory;
+
+int main ()
+{
+    create_directory = mkdir("data/", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (create_directory != 0)
+    {
+        printf("Unsuccessful!");
+    }
+}
+
+
 
