@@ -44,7 +44,7 @@ int main(int argc, char** argv){
         if (argc != 3)
         {
             printf("ERROR-list: There should be 3 args");
-            return 0;
+            exit(0);
         }
     }
     if (strcmp(argv[3],"get") == 0 || strcmp(argv[3],"put") == 0)
@@ -52,7 +52,7 @@ int main(int argc, char** argv){
         if (argc != 4)
         {
             printf("ERROR-get/put: There should be 4 args");
-            return 0;
+            exit(0);
         }
     }
     /*
@@ -62,44 +62,38 @@ int main(int argc, char** argv){
      le=htonl(le);
      printf("%x\n",le);
     */
-    while(1){
-        char buff[100];
-        memset(buff,0,100);
-        /*LIST_REQUEST*/
-        if (strcmp(argv[3],"list") == 0)
+    char buff[100];
+    memset(buff,0,100);
+    /*LIST_REQUEST*/
+    if (strcmp(argv[3],"list") == 0)
+    {
+        strcpy(message_box.protocol,"myftp");
+        strcpy(message_box.type,"0xA1");
+        message_box.length = sizeof(struct message_s);
+        int len;
+        if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
         {
-            strcpy(message_box.protocol,"myftp");
-            strcpy(message_box.type,"0xA1");
-            message_box.length = sizeof(struct message_s);
-            int len;
-            if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
-            {
-                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
-                exit(0);
-            }
+            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+            exit(0);
         }
-        /*GET_REQUEST*/
-        if (strcmp(argv[3],"get") == 0)
+    }
+    /*GET_REQUEST*/
+    if (strcmp(argv[3],"get") == 0)
+    {
+        int payload_len;
+        payload_len = strlen(argv[4]);
+        if (argv[4][payload_len-1] != '\n')
         {
-            int payload_len;
-            payload_len = strlen(argv[4]);
-            if (argv[4][payload_len-1] != '\n')
-            {
-                argv[4][payload_len] = '\n';
-            }
-            strcpy(message_box.protocol,"myftp");
-            strcpy(message_box.type,"0xB1");
-            message_box.length = sizeof(struct message_s);
-            int len;
-            if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
-            {
-                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
-                exit(0);
-            }
+            argv[4][payload_len] = '\n';
         }
-        if(strcmp(buff,"exit")==0){
-            close(sd);
-            break;
+        strcpy(message_box.protocol,"myftp");
+        strcpy(message_box.type,"0xB1");
+        message_box.length = sizeof(struct message_s);
+        int len;
+        if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
+        {
+            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+            exit(0);
         }
     }
     return 0;
