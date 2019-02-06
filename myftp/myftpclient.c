@@ -85,7 +85,7 @@ int main(int argc, char** argv){
             payload_len = strlen(argv[4]);
             if (argv[4][payload_len-1] != '\n')
             {
-                argv[4][payload_len] == '\n';
+                argv[4][payload_len] = '\n';
             }
             strcpy(message_box.protocol,"myftp");
             strcpy(message_box.type,"0xB1");
