@@ -18,6 +18,7 @@
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
+    struct message_s message_box;
     struct sockaddr_in server_addr;
     /*
      struct sockaddr_in {
@@ -50,12 +51,18 @@ int main(int argc, char** argv){
     while(1){
         char buff[100];
         memset(buff,0,100);
-        scanf("%s",buff);
-        printf("%s\n",buff);
-        int len;
-        if((len=send(sd,buff,strlen(buff),0))<0){
-            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
-            exit(0);
+        /*printf("%s\n",buff);*/
+        if (strcmp(argv[3],"list") == 0)
+        {
+            message_box.protocol = "myftp";
+            message_box.type = "0xA1";
+            message_box.length = sizeof(message_box);
+            int len;
+            if((len=send(sd,(char*)message_box,strlen((char*)message_box),0))<0)
+            {
+                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+                exit(0);
+            }
         }
         if(strcmp(buff,"exit")==0){
             close(sd);
