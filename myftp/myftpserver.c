@@ -15,6 +15,9 @@
 # include <arpa/inet.h>
 
 # define PORT 12345
+void list_request();
+void get_request();
+void put_request();
 
 
 int main(int argc, char** argv){
@@ -42,10 +45,24 @@ int main(int argc, char** argv){
     while(1){
         char buff[100];
         struct message_s recv_message;
+        memset(&recv_message,0,sizeof(recv_message));
         int len;
         if((len=recv(client_sd,(char *) &recv_message,sizeof(buff),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
+        }
+        if (strcmp(recv_message.protocol, "myftp") != 0) {
+            printf("wrong protocol\n");
+            exit(0);
+        }
+        if (strcmp(recv_message.type, "0xA1") == 0) {
+            list_request();
+        }
+        if (strcmp(recv_message.type, "0xB1") == 0) {
+            get_request();
+        }
+        if (strcmp(recv_message.type, "0xC1") == 0) {
+            put_request();
         }
         buff[len]='\0';
         printf("RECEIVED INFO: ");
