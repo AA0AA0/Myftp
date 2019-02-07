@@ -39,6 +39,7 @@ int main(int argc, char** argv){
         printf("connection error: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
+    
     if (strcmp(argv[3],"list") == 0)
     {
         if (argc != 4)
@@ -64,12 +65,15 @@ int main(int argc, char** argv){
     */
     char buff[100];
     memset(buff,0,100);
-    /*LIST_REQUEST*/
+    //LIST_REQUEST
     if (strcmp(argv[3],"list") == 0)
     {
         strcpy(message_box.protocol,"myftp");
-        strcpy(message_box.type,"0xA1");
+        printf("%s ",message_box.protocol);
+        message_box.type = 0xA1;
+        printf("%u ",message_box.type);
         message_box.length = sizeof(struct message_s);
+        printf("%d ",message_box.length);
         int len;
         if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
         {
@@ -77,7 +81,8 @@ int main(int argc, char** argv){
             exit(0);
         }
     }
-    /*GET_REQUEST*/
+    /*
+    //GET_REQUEST
     if (strcmp(argv[3],"get") == 0)
     {
         int payload_len;
@@ -96,5 +101,6 @@ int main(int argc, char** argv){
             exit(0);
         }
     }
+     */
     return 0;
 }
