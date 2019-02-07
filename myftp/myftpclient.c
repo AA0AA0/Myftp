@@ -41,17 +41,17 @@ int main(int argc, char** argv){
     }
     if (strcmp(argv[3],"list") == 0)
     {
-        if (argc != 3)
+        if (argc != 4)
         {
-            printf("ERROR-list: There should be 3 args");
+            printf("ERROR-list: ./myftpclient <server ip addr> <server port> <list>");
             exit(0);
         }
     }
     if (strcmp(argv[3],"get") == 0 || strcmp(argv[3],"put") == 0)
     {
-        if (argc != 4)
+        if (argc != 5)
         {
-            printf("ERROR-get/put: There should be 4 args");
+            printf("ERROR-get|put:./myftpclient <server ip addr> <server port> <get|put> <file>");
             exit(0);
         }
     }
