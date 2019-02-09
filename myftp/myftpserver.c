@@ -65,10 +65,6 @@ int main(int argc, char** argv){
         }
         printf("RECEIVED INFO: ");
         printf("%s\n",recv_message);
-      /*  if(strcmp("exit",buff)==0){
-            close(client_sd);
-            break;
-        }*/
     }
     close(sd);
     return 0;
