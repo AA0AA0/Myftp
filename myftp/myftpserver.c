@@ -46,7 +46,7 @@ int main(int argc, char** argv){
         struct message_s recv_message;
         memset(&recv_message,0,sizeof(recv_message));
         int len;
-        if((len=recv(client_sd,(char *) &recv_message,sizeof(recv_message),0))<0){
+        if((len=recv(client_sd,(struct message_s *)&recv_message,sizeof(recv_message),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
@@ -55,13 +55,16 @@ int main(int argc, char** argv){
             exit(0);
         }
         if (strcmp(recv_message.type, "0xA1") == 0) {
-            list_request();
+            printf("list");
+            //list_request();
         }
         if (strcmp(recv_message.type, "0xB1") == 0) {
-            get_request();
+            printf("get");
+            //get_request();
         }
         if (strcmp(recv_message.type, "0xC1") == 0) {
-            put_request();
+            printf("put");
+            //put_request();
         }
         printf("RECEIVED INFO: ");
         printf("%s\n",recv_message);
