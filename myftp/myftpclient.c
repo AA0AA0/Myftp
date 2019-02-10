@@ -67,24 +67,28 @@ int main(int argc, char** argv){
     unsigned char temp[5] = "myftp";
     unsigned char* protocol = temp;
     memset(buff,0,100);
+    memset((void *)&message_box,0,sizeof(message_box));
     //LIST_REQUEST
     if (strcmp(argv[3],"list") == 0)
     {
+        /* Work if only send this
         memcpy(message_box.protocol,protocol,sizeof(protocol));
         send(sd,(char*)protocol,strlen(protocol),0);
+        */
+        unsigned char type[4] = "0xA1";
+        memcpy(message_box.protocol,temp,5);
         /*
-        printf("%s ",message_box.protocol);
-        message_box.type = 0xA1;
-        printf("%u ",message_box.type);
+        memcpy(message_box.type,type,strlen(type));
+        printf("%s ",message_box.type);
         message_box.length = sizeof(struct message_s);
         printf("%d ",message_box.length);
+         */
         int len;
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-         */
     }
     /*
     //GET_REQUEST

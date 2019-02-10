@@ -49,6 +49,7 @@ int main(int argc, char** argv){
         exit(0);
     }
     while(1){
+        /* Work if only this part
         unsigned char myftp[5] = "myftp";
         unsigned char protocol[5];
         recv(client_sd,(char*)&protocol,sizeof(protocol),0);
@@ -61,11 +62,9 @@ int main(int argc, char** argv){
             printf("ok");
             exit(0);
         }
-        /*
+        */
         struct message_s recv_message;
         unsigned char temp[5] = "myftp";
-        unsigned char* protocol = temp;
-        printf("%s",(char*)protocol);
         memset(&recv_message,0,sizeof(recv_message));
         int len;
         if((len=recv(client_sd,(char*)&recv_message,sizeof(recv_message),0))<0){
@@ -73,13 +72,17 @@ int main(int argc, char** argv){
             exit(0);
         }
         printf("%s",(char*)recv_message.protocol);
-        printf("%u",recv_message.type);
-        printf("%d",recv_message.length);
-        if (strcmp(recv_message.protocol, "myftp") != 0) {
+        if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
             printf("wrong protocol\n");
             printf("%s\n", recv_message.protocol);
             exit(0);
         }
+        else
+        {
+            printf("ok");
+            exit(0);
+        }
+        /*
         if (strcmp(recv_message.type, "0xA1") == 0) {
             printf("list");
             //list_request();
