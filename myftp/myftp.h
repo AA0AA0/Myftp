@@ -14,6 +14,5 @@ struct message_s
     unsigned char type;             /* type (1 byte) */
     unsigned int length;            /* length (header + payload) (4 bytes) */
 } __attribute__ ((packed));
-typedef struct message_s message_s;
 
 #endif /* myftp_h */
