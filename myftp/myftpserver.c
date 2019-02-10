@@ -71,21 +71,20 @@ int main(int argc, char** argv){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
-        printf("%s",(char*)recv_message.protocol);
         if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
             printf("wrong protocol\n");
             exit(0);
         }
         else
         {
-            printf("ok");
-            exit(0);
+            printf("protocol ok");
         }
-        /*
-        if (strcmp(recv_message.type, "0xA1") == 0) {
+        if (recv_message.type == 0xA1){
             printf("list");
+            exit(0);
             //list_request();
         }
+        /*
         if (strcmp(recv_message.type, "0xB1") == 0) {
             printf("get");
             //get_request();
