@@ -3,6 +3,7 @@
 //  myftp
 //
 
+#include <errno.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
@@ -16,27 +17,35 @@ char * file_name;
 
 void* list_files ()
 {
-    
-    create_directory = mkdir("./data", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if (create_directory != 0)
-    {
-        printf("Error in creating directory or directory already exists!\n");
-    }
-    
     dir = opendir("./data");
-    
-    while ((dp = readdir(dir)) != NULL)
+    if (dir)
     {
-        if (strcmp(dp->d_name, ".") == 1 && strcmp(dp->d_name, "..") == 1)
+        while ((dp = readdir(dir)) != NULL)
         {
-            printf("%s\n", dp->d_name);
-            //return dp->d_name;
+            if (strcmp(dp->d_name, ".") == 1 && strcmp(dp->d_name, "..") == 1)
+            {
+                printf("%s\n", dp->d_name);
+                //return dp->d_name;
+            }
+            
         }
-        
+        closedir(dir);
+        return NULL;
     }
-    closedir(dir);
-    return NULL;
+    else if (ENOENT == errno)
+    {
+        create_directory = mkdir("./data", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if (create_directory != 0)
+        {
+            printf("Error in creating directory!\n");
+        }
+    }
+    else
+    {
+        printf("Error in opening directory ./data !\n");
+    }
     
+    return NULL;
 }
 
 int main ()

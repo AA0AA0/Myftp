@@ -75,11 +75,10 @@ int main(int argc, char** argv){
         memcpy(message_box.protocol,protocol,sizeof(protocol));
         send(sd,(char*)protocol,strlen(protocol),0);
         */
-        unsigned char type[4] = "0xA1";
+        unsigned char type = 0xA1;
         memcpy(message_box.protocol,temp,5);
+        message_box.type = type;
         /*
-        memcpy(message_box.type,type,strlen(type));
-        printf("%s ",message_box.type);
         message_box.length = sizeof(struct message_s);
         printf("%d ",message_box.length);
          */
