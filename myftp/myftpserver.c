@@ -43,15 +43,19 @@ int main(int argc, char** argv){
         exit(0);
     }
     while(1){
+        char** buffer = (char**)malloc(sizeof(char**));
         struct message_s recv_message;
         memset(&recv_message,0,sizeof(recv_message));
         int len;
-        if((len=recv(client_sd,(struct message_s *)&recv_message,sizeof(recv_message),0))<0){
+        if((len=recv(client_sd, buffer,sizeof(buffer),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
+        buffer[len] = 0;
+        /*
         if (strcmp(recv_message.protocol, "myftp") != 0) {
             printf("wrong protocol\n");
+            printf("%s\n", recv_message.protocol);
             exit(0);
         }
         if (strcmp(recv_message.type, "0xA1") == 0) {
@@ -65,9 +69,10 @@ int main(int argc, char** argv){
         if (strcmp(recv_message.type, "0xC1") == 0) {
             printf("put");
             //put_request();
-        }
+        }*/
         printf("RECEIVED INFO: ");
-        printf("%s\n",recv_message);
+        printf("%s\n", buffer);
+        free(buffer);
     }
     close(sd);
     return 0;

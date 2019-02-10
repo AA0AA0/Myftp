@@ -75,7 +75,7 @@ int main(int argc, char** argv){
         message_box.length = sizeof(struct message_s);
         printf("%d ",message_box.length);
         int len;
-        if((len=send(sd,(char *)&message_box,strlen((char*)&message_box),0))<0)
+        if((len=send(sd,(char **)&message_box,strlen((char*)&message_box),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
