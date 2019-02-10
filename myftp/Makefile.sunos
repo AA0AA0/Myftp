@@ -3,10 +3,10 @@ LIB = -lsocket -lnsl
 
 all: server client
 
-server: server.c
+server: myftpserver.c
 	${CC} -o server myftpserver.c ${LIB}
 
-client: client.c
+client: myftpclient.c
 	${CC} -o client myftpclient.c ${LIB}
 
 clean:
