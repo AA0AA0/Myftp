@@ -81,20 +81,22 @@ int main(int argc, char** argv){
         }
         if (recv_message.type == 0xA1){
             printf("list");
+            printf("%d",recv_message.length);
             exit(0);
             //list_request();
         }
-        /*
-        if (strcmp(recv_message.type, "0xB1") == 0) {
+        if (recv_message.type == 0xB1) {
             printf("get");
+            printf("%d",recv_message.length);
+            exit(0);
             //get_request();
         }
-        if (strcmp(recv_message.type, "0xC1") == 0) {
+        if (recv_message.type == 0xC1) {
             printf("put");
+            printf("%d",recv_message.length);
+            exit(0);
             //put_request();
         }
-        printf("RECEIVED INFO: ");
-        printf("%s\n",recv_message);
       /*  if(strcmp("exit",buff)==0){
             close(client_sd);
             break;
