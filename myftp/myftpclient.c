@@ -64,11 +64,13 @@ int main(int argc, char** argv){
      printf("%x\n",le);
     */
     char buff[100];
+    unsigned char temp[5] = "myftp";
+    unsigned char* protocol = temp;
     memset(buff,0,100);
     //LIST_REQUEST
     if (strcmp(argv[3],"list") == 0)
     {
-        strcpy(message_box.protocol,"myftp");
+        memcpy(message_box.protocol,protocol,sizeof(protocol));
         printf("%s ",message_box.protocol);
         message_box.type = 0xA1;
         printf("%u ",message_box.type);

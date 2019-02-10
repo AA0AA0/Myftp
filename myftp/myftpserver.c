@@ -22,6 +22,12 @@ void put_request();
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
+    long val = 1;
+    if (setsockopt(sd,SOL_SOCKET,SO_REUSEADDR, &val, sizeof(long)) == -1)
+    {
+        perror("setsocopt");
+        exit(1);
+    }
     int client_sd;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
@@ -51,8 +57,9 @@ int main(int argc, char** argv){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             exit(0);
         }
-        buffer[len] = 0;
-        /*
+        printf("%s",(unsigned char*)recv_message.protocol);
+        printf("%u",recv_message.type);
+        printf("%d",recv_message.length);
         if (strcmp(recv_message.protocol, "myftp") != 0) {
             printf("wrong protocol\n");
             printf("%s\n", recv_message.protocol);
