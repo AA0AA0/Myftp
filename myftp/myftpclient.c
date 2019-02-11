@@ -63,6 +63,7 @@ int main(int argc, char** argv){
      le=htonl(le);
      printf("%x\n",le);
     */
+    int file_exist;
     char buff[100];
     unsigned char temp[5] = "myftp";
     unsigned char* protocol = temp;
@@ -128,7 +129,11 @@ int main(int argc, char** argv){
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
-        find_files(payload);
+        file_exist = find_files(payload);
+        if (file_exist == 0)
+            printf("File not found!");
+            
+        
         /*
         if (argv[4][strlen(argv[4])-1] != '\0')
         {
