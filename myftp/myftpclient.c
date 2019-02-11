@@ -63,6 +63,7 @@ int main(int argc, char** argv){
      le=htonl(le);
      printf("%x\n",le);
     */
+    int file_exist;
     char buff[100];
     unsigned char temp[5] = "myftp";
     memset(buff,0,100);
@@ -133,36 +134,45 @@ int main(int argc, char** argv){
             exit(0);
         }
     }
-    //PUT_REQUEST   (need to check if the file exist or not -- not complete)
+    //PUT_REQUEST
     if (strcmp(argv[3],"put") == 0)
     {
+        
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
-        find_files(payload);
-        /*
-        if (argv[4][strlen(argv[4])-1] != '\0')
-        {
-            payload = (char *)malloc(strlen(argv[4])*sizeof(char));
-            strcpy(payload,argv[4]);
-            payload[strlen(argv[4])] = '\0';
-        }
+        file_exist = find_files(payload);
+        
+        if (file_exist == 0)
+            printf("File not found!\n");
         else
         {
-            payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
-            strcpy(payload,argv[4]);
+            /*
+             if (argv[4][strlen(argv[4])-1] != '\0')
+             {
+             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
+             strcpy(payload,argv[4]);
+             payload[strlen(argv[4])] = '\0';
+             }
+             else
+             {
+             payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
+             strcpy(payload,argv[4]);
+             }
+             */
+            unsigned char type = 0xC1;
+            memcpy(message_box.protocol,temp,5);
+            message_box.type = type;
+            message_box.length = 5+1+4+strlen(payload);
+            int len;
+            if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
+            {
+                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+                exit(0);
+            }
         }
-         */
-        unsigned char type = 0xC1;
-        memcpy(message_box.protocol,temp,5);
-        message_box.type = type;
-        message_box.length = 5+1+4+strlen(payload);
-        int len;
-        if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
-        {
-            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
-            exit(0);
-        }
+        
+
     }
     return 0;
 }

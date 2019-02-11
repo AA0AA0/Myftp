@@ -16,6 +16,10 @@
 # include <sys/stat.h>
 # include <dirent.h>
 
+void list_request();
+void get_request();
+void put_request();
+
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
     long val = 1;
