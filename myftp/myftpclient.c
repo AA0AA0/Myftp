@@ -90,11 +90,11 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"get") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\n')
+        if (argv[4][strlen(argv[4])-1] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
-            payload[strlen(argv[4])] = '\n';
+            payload[strlen(argv[4])] = '\0';
         }
         else
         {
@@ -116,11 +116,11 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"put") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\n')
+        if (argv[4][strlen(argv[4])-1] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
-            payload[strlen(argv[4])] = '\n';
+            payload[strlen(argv[4])] = '\0';
         }
         else
         {

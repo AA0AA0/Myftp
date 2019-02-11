@@ -14,7 +14,7 @@ int create_directory;
 DIR *dir;
 struct dirent *dp;
 char * file_name;
-
+char payload[1024];
 void* list_files ()
 {
     dir = opendir("./data");
@@ -24,11 +24,15 @@ void* list_files ()
         {
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
             {
+                strcat(payload, dp->d_name);
+                strcat(payload, "\n");
                 printf("%s\n", dp->d_name);
                 //return dp->d_name;
             }
             
         }
+        strcat(payload, "\0");
+        printf("%s\n", payload);
         closedir(dir);
         return NULL;
     }
