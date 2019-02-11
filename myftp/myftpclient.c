@@ -113,7 +113,6 @@ int main(int argc, char** argv){
     {
         char * payload;
         payload = argv[4];
-        printf("%s", payload);
         /*
         if (argv[4][strlen(argv[4])] != '\0')
         {
@@ -149,20 +148,33 @@ int main(int argc, char** argv){
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
+        if ((len = recv(sd, (const char *)&server_reply, sizeof(server_reply), 0))<0) {
+            printf("Cannot recv server reply");
+            exit(0);
+        }
+        if (server_reply.type == 0xB3) {
+            printf("Cannot find the file\n");
+            exit(0);
+        }
+        
         int size;
         if ((len = recv(sd, &size, sizeof(int), 0))< 0) {
             printf("Error in recv file size\n");
             exit(1);
         }
-        char* data = malloc(size);
-        printf("%d\n", size);
-        int file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666);
-        if (recv(sd, data, size, 0) < 0) {
-            printf("Cannot recv payload\n");
-            exit(1);
-        }
         if (size == 0) {
             printf("The file is empty\n");
+            exit(1);
+        }
+        char* data = malloc(size);
+        printf("%d\n", size);
+        int file_desc;
+        if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
+            printf("Cannot create file");
+            exit(0);
+        }
+        if (recv(sd, data, size, 0) < 0) {
+            printf("Cannot recv payload\n");
             exit(1);
         }
         if (write(file_desc, data, size) < 0){
@@ -178,7 +190,7 @@ int main(int argc, char** argv){
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
-        file_exist = find_files(payload);
+        file_exist = find_files(payload, 1);
         
         if (file_exist == 0)
             printf("File not found!\n");

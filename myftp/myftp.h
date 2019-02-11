@@ -17,5 +17,5 @@ struct message_s
 
 char* list_files (char* payload);
 
-int find_files(char* filename);
+int find_files(char* filename, int flag);
 #endif /* myftp_h */

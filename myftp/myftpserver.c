@@ -100,8 +100,10 @@ int main(int argc, char** argv){
                 printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
                 exit(0);
             }
-            printf("%s\n",file);
-            if (find_files(file) != 1){
+            char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
+            strcpy(file_name, "./data/");
+            strcat(file_name, file);
+            if (find_files(file, 0) != 1){
              reply_message.length = 10;
              memcpy(reply_message.protocol, temp, 5);
              reply_message.type = 0xB3;
@@ -112,15 +114,18 @@ int main(int argc, char** argv){
                 exit(0);
              }
              else {
-                 char file_name[30] = "./data/";
-                 strcat(file_name, file);
                  int file_desc, file_size;
                  struct stat obj;
                  stat(file_name, &obj);
                  file_desc = open(file_name, O_RDONLY);
                  file_size = obj.st_size;
+                 reply_message.length = 10 + file_size;
+                 reply_message.type = 0xB2;
+                 memcpy(reply_message.protocol, temp, 5);
+                 send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0);
                  send(client_sd, &file_size, sizeof(int), 0);
                  sendfile(client_sd, file_desc, NULL, file_size);
+                 close(file_desc);
                  exit(0);
              }
              exit(0);

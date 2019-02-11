@@ -47,11 +47,16 @@ char* list_files (char* payload)
     return NULL;
 }
 
-int find_files(char* filename)
+int find_files(char* filename, int flag)
 {
     DIR *dir;
     struct dirent *dp;
-    dir = opendir(".");
+    if (flag == 1) {
+        dir = opendir(".");
+    }
+    else {
+        dir = opendir("./data");
+    }
     if (dir)
     {
         while ((dp = readdir(dir)) != NULL)
