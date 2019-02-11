@@ -16,7 +16,6 @@
 # include <sys/stat.h>
 #include <dirent.h>
 
-# define PORT 12345
 void list_request();
 void get_request();
 void put_request();
@@ -75,7 +74,7 @@ int main(int argc, char** argv){
     memset(&server_addr,0,sizeof(server_addr));
     server_addr.sin_family=AF_INET;
     server_addr.sin_addr.s_addr=htonl(INADDR_ANY);
-    server_addr.sin_port=htons(PORT);
+    server_addr.sin_port=htons(atoi(argv[1]));
     if(bind(sd,(struct sockaddr *) &server_addr,sizeof(server_addr))<0){
         printf("bind error: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
