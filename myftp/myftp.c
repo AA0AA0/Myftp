@@ -25,7 +25,6 @@ char* list_files (char* payload)
             {
                 strcat(payload, dp->d_name);
                 strcat(payload, "\n");
-                //return dp->d_name;
             }
         }
         strcat(payload, "\0");
@@ -44,7 +43,7 @@ char* list_files (char* payload)
     {
         printf("Error in opening directory ./data !\n");
     }
-    
+    closedir(dir);
     return NULL;
 }
 
