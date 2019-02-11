@@ -14,52 +14,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <sys/stat.h>
-#include <dirent.h>
-
-void list_request();
-void get_request();
-void put_request();
-
-/*
-char* list_files (char* payload)
-{
-    int create_directory;
-    DIR *dir;
-    struct dirent *dp;
-    char * file_name;
-    
-    dir = opendir("./data");
-    if (dir)
-    {
-        while ((dp = readdir(dir)) != NULL)
-        {
-            if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-            {
-                strcat(payload, dp->d_name);
-                strcat(payload, "\n");
-                //return dp->d_name;
-            }
-        }
-        strcat(payload, "\0");
-        closedir(dir);
-        return payload;
-    }
-    else if (ENOENT == errno)
-    {
-        create_directory = mkdir("./data", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (create_directory != 0)
-        {
-            printf("Error in creating directory!\n");
-        }
-    }
-    else
-    {
-        printf("Error in opening directory ./data !\n");
-    }
-    
-    return NULL;
-}
- */
+# include <dirent.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -89,21 +44,8 @@ int main(int argc, char** argv){
         printf("accept erro: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
-    while(1){
-        /* Work if only this part
-        unsigned char myftp[5] = "myftp";
-        unsigned char protocol[5];
-        recv(client_sd,(char*)&protocol,sizeof(protocol),0);
-        if (memcmp(protocol, myftp,sizeof(protocol)) != 0) {
-            printf("wrong protocol\n");
-            exit(0);
-        }
-        else
-        {
-            printf("ok");
-            exit(0);
-        }
-        */
+    while(1)
+    {
         struct message_s recv_message;
         unsigned char temp[5] = "myftp";
         memset(&recv_message,0,sizeof(recv_message));

@@ -59,12 +59,11 @@ int find_files(char* filename)
         {
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(filename, dp->d_name) == 0)
             {
-                strcat(filename, dp->d_name);
                 printf("Successfully find file %s\n", dp->d_name);
+                closedir(dir);
+                return 1;
             }
         }
-        closedir(dir);
-        return 1;
     }
     else
     {
