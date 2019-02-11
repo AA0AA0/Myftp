@@ -77,6 +77,7 @@ int main(int argc, char** argv){
         */
         unsigned char type = 0xA1;
         memcpy(message_box.protocol,temp,5);
+        char payload[1024] = "";
         message_box.type = type;
         message_box.length = 5+1+4;
         int len;
@@ -85,16 +86,25 @@ int main(int argc, char** argv){
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
+        if ((len = recv(sd, payload, sizeof(payload), 0)) < 0) {
+            printf("Receive Error\n");
+            exit(0);
+        }
+        if (strcmp(payload, "") == 0) {
+            printf("NO FILE IS FOUND\n");
+            exit(0);
+        }
+        printf("%s", payload);
     }
     //GET_REQUEST
     if (strcmp(argv[3],"get") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\n')
+        if (argv[4][strlen(argv[4])-1] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
-            payload[strlen(argv[4])] = '\n';
+            payload[strlen(argv[4])] = '\0';
         }
         else
         {
@@ -116,11 +126,11 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"put") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\n')
+        if (argv[4][strlen(argv[4])-1] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
-            payload[strlen(argv[4])] = '\n';
+            payload[strlen(argv[4])] = '\0';
         }
         else
         {

@@ -22,7 +22,7 @@ void get_request();
 void put_request();
 
 
-void* list_files ()
+char* list_files (char* payload)
 {
     int create_directory;
     DIR *dir;
@@ -36,13 +36,14 @@ void* list_files ()
         {
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
             {
-                printf("%s\n", dp->d_name);
+                strcat(payload, dp->d_name);
+                strcat(payload, "\n");
                 //return dp->d_name;
             }
-            
         }
+        strcat(payload, "\0");
         closedir(dir);
-        return NULL;
+        return payload;
     }
     else if (ENOENT == errno)
     {
@@ -118,13 +119,18 @@ int main(int argc, char** argv){
         }
         else
         {
-            printf("protocol ok");
+            printf("protocol ok\n");
         }
+        struct message_s reply_message;
+        memset(&reply_message, 0, sizeof(reply_message));
+        char reply_payload[1024] = "";
         if (recv_message.type == 0xA1){
             printf("list\n");
-            list_files();
+            list_files(reply_payload);
+            if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
+                printf("error in sending payload\n");
+            }
             exit(0);
-            //list_request();
         }
         if (recv_message.type == 0xB1) {
             printf("get");
