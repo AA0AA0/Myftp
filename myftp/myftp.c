@@ -73,14 +73,6 @@ void* find_files(char* filename)
         closedir(dir);
         return NULL;
     }
-    else if (ENOENT == errno)
-    {
-        create_directory = mkdir("./data", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (create_directory != 0)
-        {
-            printf("Error in creating directory!\n");
-        }
-    }
     else
     {
         printf("Error in opening directory ./data !\n");
