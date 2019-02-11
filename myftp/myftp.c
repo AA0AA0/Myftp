@@ -3,6 +3,7 @@
 //  myftp
 //
 
+#include "myftp.h"
 #include <errno.h>
 #include <stdio.h>
 #include <dirent.h>
@@ -10,13 +11,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int create_directory;
-DIR *dir;
-struct dirent *dp;
-char * file_name;
-char payload[1024];
-void* list_files ()
+char* list_files (char* payload)
 {
+    int create_directory;
+    DIR *dir;
+    struct dirent *dp;
+    char * file_name;
+    
     dir = opendir("./data");
     if (dir)
     {
@@ -26,15 +27,12 @@ void* list_files ()
             {
                 strcat(payload, dp->d_name);
                 strcat(payload, "\n");
-                printf("%s\n", dp->d_name);
                 //return dp->d_name;
             }
-            
         }
         strcat(payload, "\0");
-        printf("%s\n", payload);
         closedir(dir);
-        return NULL;
+        return payload;
     }
     else if (ENOENT == errno)
     {
@@ -50,11 +48,6 @@ void* list_files ()
     }
     
     return NULL;
-}
-
-int main ()
-{
-    list_files();
 }
 
 

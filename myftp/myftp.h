@@ -15,4 +15,5 @@ struct message_s
     unsigned int length;            /* length (header + payload) (4 bytes) */
 } __attribute__ ((packed));
 
+char* list_files (char* payload);
 #endif /* myftp_h */

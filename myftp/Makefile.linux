@@ -4,9 +4,13 @@ LIB =
 all: server client
 
 server: myftpserver.c
-	${CC} -o server myftpserver.c ${LIB}
+	${CC} -c myftpserver.c ${LIB}
+	${CC} -c myftp.c ${LIB}
+	${CC} -o server myftpserver.o myftp.o ${LIB}
 
 client: myftpclient.c
+	${CC} -c myftpserver.o ${LIB}
+	${CC} -c myftp.c ${LIB}
 	${CC} -o client myftpclient.c ${LIB}
 
 clean:

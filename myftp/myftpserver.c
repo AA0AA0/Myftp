@@ -20,7 +20,7 @@ void list_request();
 void get_request();
 void put_request();
 
-
+/*
 char* list_files (char* payload)
 {
     int create_directory;
@@ -59,6 +59,7 @@ char* list_files (char* payload)
     
     return NULL;
 }
+ */
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
