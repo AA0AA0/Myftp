@@ -13,6 +13,7 @@
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+# include <fcntl.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -110,9 +111,9 @@ int main(int argc, char** argv){
     //GET_REQUEST
     if (strcmp(argv[3],"get") == 0)
     {
-        char* payload;
-        payload = (char *)malloc((strlen(argv[4])+1)*sizeof(char));
-        strcpy(payload,argv[4]);
+        char * payload;
+        payload = argv[4];
+        printf("%s", payload);
         /*
         if (argv[4][strlen(argv[4])] != '\0')
         {
@@ -133,34 +134,42 @@ int main(int argc, char** argv){
         message_box.type = type;
         message_box.length = 5+1+4+strlen(payload);
         int len;
+        int fn_size = strlen(argv[4]);
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        if((len=send(sd,payload,strlen(payload),0))<0)
+        if ((len = send(sd, &fn_size, sizeof(int), 0)) < 0) {
+            printf("Error in sending filename size\n");
+            exit(0);
+        }
+        if((len=send(sd, payload,strlen(payload),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        FILE *fr = fopen(argv[4], "a");
-        if (fr == NULL) {
-            printf("Cannot open file\n");
-            exit(0);
+        int size;
+        if ((len = recv(sd, &size, sizeof(int), 0))< 0) {
+            printf("Error in recv file size\n");
+            exit(1);
         }
-        char recvbuf[512];
-        if ((len = recv(sd, recvbuf, sizeof(recvbuf), 0))< 0) {
-            printf("Cannot recv file\n");
-            exit(0);
+        char* data = malloc(size);
+        printf("%d\n", size);
+        int file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666);
+        if (recv(sd, data, size, 0) < 0) {
+            printf("Cannot recv payload\n");
+            exit(1);
         }
-        int write_size;
-        if (write_size = fwrite(recvbuf, sizeof(char), 512, fr) < 0){
-            printf("Error in writing file\n");
-            exit(0);
+        if (size == 0) {
+            printf("The file is empty\n");
+            exit(1);
         }
-        fclose(fr);
-        
-        
+        if (write(file_desc, data, size) < 0){
+            printf("Error in write\n");
+        }
+        close(file_desc);
+        exit(0);
     }
     //PUT_REQUEST
     if (strcmp(argv[3],"put") == 0)

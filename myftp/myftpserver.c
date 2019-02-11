@@ -9,12 +9,15 @@
 # include <unistd.h>
 # include <string.h>
 # include <errno.h>
+# include <fcntl.h>
 # include <sys/socket.h>
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <sys/stat.h>
 # include <dirent.h>
+# include <sys/uio.h>
+# include <sys/sendfile.h>
 
 void list_request();
 void get_request();
@@ -86,18 +89,19 @@ int main(int argc, char** argv){
             exit(0);
         }
         if (recv_message.type == 0xB1) {
-            printf("get");
-            printf("%d",recv_message.length);
-            char file[10];
-            if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
+            int filename_size;
+            if (len = recv(client_sd, &filename_size, sizeof(int), 0) < 0) {
+                printf("Can't get size of file name\n");
+            }
+            char *file;
+            file = (char *)malloc(filename_size * sizeof(char));
+            printf("%d\n", filename_size);
+            if((len=recv(client_sd,file,filename_size,0))<0){
                 printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
                 exit(0);
             }
-            printf("%s",file);
-            
+            printf("%s\n",file);
             if (find_files(file) != 1){
-             // cannot find file
-             
              reply_message.length = 10;
              memcpy(reply_message.protocol, temp, 5);
              reply_message.type = 0xB3;
@@ -108,24 +112,17 @@ int main(int argc, char** argv){
                 exit(0);
              }
              else {
-                 char fname[512] = "./data/";
-                 strcat(fname, file);
-                 char sdbuf[512];
-                 FILE *fs = fopen(fname, "r");
-                 if (fs == NULL) {
-                     printf("Error in open file");
-                     exit(1);
-                 }
-                 bzero(sdbuf, 512);
-                 int fs_block_sz;
-                 while((fs_block_sz = fread(sdbuf, sizeof(char), 512, fs))>0) {
-                     if(send(client_sd, sdbuf, fs_block_sz, 0) < 0){
-                         fprintf(stderr, "ERROR: Failed to send file %s. (errno = %d)\n", fname, errno);
-                         exit(1);
-                     }
-                     bzero(sdbuf, 512);
-                 }
-            }
+                 char file_name[30] = "./data/";
+                 strcat(file_name, file);
+                 int file_desc, file_size;
+                 struct stat obj;
+                 stat(file_name, &obj);
+                 file_desc = open(file_name, O_RDONLY);
+                 file_size = obj.st_size;
+                 send(client_sd, &file_size, sizeof(int), 0);
+                 sendfile(client_sd, file_desc, NULL, file_size);
+                 exit(0);
+             }
              exit(0);
              //get_request();
             
