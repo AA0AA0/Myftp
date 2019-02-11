@@ -66,9 +66,10 @@ int main(int argc, char** argv){
     int file_exist;
     char buff[100];
     unsigned char temp[5] = "myftp";
-    unsigned char* protocol = temp;
     memset(buff,0,100);
     memset((void *)&message_box,0,sizeof(message_box));
+    struct message_s server_reply;
+    memset((void *)& server_reply, 0, sizeof(server_reply));
     //LIST_REQUEST
     if (strcmp(argv[3],"list") == 0)
     {
@@ -87,6 +88,15 @@ int main(int argc, char** argv){
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
+        if ((len = recv(sd, (const char *)&server_reply, sizeof(server_reply), 0))< 0) {
+            printf("Error in recv server reply\n");
+            exit(0);
+        }
+        if (memcmp(server_reply.protocol, temp, 5) != 0) {
+            printf("Wrong Protocol\n");
+            exit(0);
+        }
+        
         if ((len = recv(sd, payload, sizeof(payload), 0)) < 0) {
             printf("Receive Error\n");
             exit(0);
@@ -101,17 +111,23 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"get") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\0')
+        payload = (char *)malloc((strlen(argv[4])+1)*sizeof(char));
+        strcpy(payload,argv[4]);
+        /*
+        if (argv[4][strlen(argv[4])] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
             payload[strlen(argv[4])] = '\0';
+            printf("%d",strlen(payload));
+            printf("%d",sizeof(payload));
         }
         else
         {
             payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
             strcpy(payload,argv[4]);
         }
+         */
         unsigned char type = 0xB1;
         memcpy(message_box.protocol,temp,5);
         message_box.type = type;
@@ -122,6 +138,29 @@ int main(int argc, char** argv){
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
+        if((len=send(sd,payload,strlen(payload),0))<0)
+        {
+            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+            exit(0);
+        }
+        FILE *fr = fopen(argv[4], "a");
+        if (fr == NULL) {
+            printf("Cannot open file\n");
+            exit(0);
+        }
+        char recvbuf[512];
+        if ((len = recv(sd, recvbuf, sizeof(recvbuf), 0))< 0) {
+            printf("Cannot recv file\n");
+            exit(0);
+        }
+        int write_size;
+        if (write_size = fwrite(recvbuf, sizeof(char), 512, fr) < 0){
+            printf("Error in writing file\n");
+            exit(0);
+        }
+        fclose(fr);
+        
+        
     }
     //PUT_REQUEST
     if (strcmp(argv[3],"put") == 0)

@@ -48,21 +48,8 @@ int main(int argc, char** argv){
         printf("accept erro: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
-    while(1){
-        /* Work if only this part
-        unsigned char myftp[5] = "myftp";
-        unsigned char protocol[5];
-        recv(client_sd,(char*)&protocol,sizeof(protocol),0);
-        if (memcmp(protocol, myftp,sizeof(protocol)) != 0) {
-            printf("wrong protocol\n");
-            exit(0);
-        }
-        else
-        {
-            printf("ok");
-            exit(0);
-        }
-        */
+    while(1)
+    {
         struct message_s recv_message;
         unsigned char temp[5] = "myftp";
         memset(&recv_message,0,sizeof(recv_message));
@@ -81,12 +68,19 @@ int main(int argc, char** argv){
             printf("protocol ok\n");
         }
         struct message_s reply_message;
-        memset(&reply_message, 0, sizeof(reply_message));
+        memset((void *)&reply_message, 0, sizeof(reply_message));
         char reply_payload[1024] = "";
         if (recv_message.type == 0xA1){
             printf("list\n");
             list_files(reply_payload);
-            if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
+            reply_message.length = 10 + strlen(reply_payload);
+            memcpy(reply_message.protocol, temp, sizeof(temp));
+            reply_message.type = 0xA2;
+            if ((len = send(client_sd,(const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                printf("Error in sending reply message\n");
+                exit(0);
+            }
+            if((len = send(client_sd, reply_payload, sizeof(reply_payload), 0)) < 0){
                 printf("error in sending payload\n");
             }
             exit(0);
@@ -94,8 +88,47 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xB1) {
             printf("get");
             printf("%d",recv_message.length);
-            exit(0);
-            //get_request();
+            char file[10];
+            if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
+                printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
+                exit(0);
+            }
+            printf("%s",file);
+            
+            if (find_files(file) != 1){
+             // cannot find file
+             
+             reply_message.length = 10;
+             memcpy(reply_message.protocol, temp, 5);
+             reply_message.type = 0xB3;
+             if ((len = send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                 printf("Error in sending reply message\n");
+                 exit(1);
+                }
+                exit(0);
+             }
+             else {
+                 char fname[512] = "./data/";
+                 strcat(fname, file);
+                 char sdbuf[512];
+                 FILE *fs = fopen(fname, "r");
+                 if (fs == NULL) {
+                     printf("Error in open file");
+                     exit(1);
+                 }
+                 bzero(sdbuf, 512);
+                 int fs_block_sz;
+                 while((fs_block_sz = fread(sdbuf, sizeof(char), 512, fs))>0) {
+                     if(send(client_sd, sdbuf, fs_block_sz, 0) < 0){
+                         fprintf(stderr, "ERROR: Failed to send file %s. (errno = %d)\n", fname, errno);
+                         exit(1);
+                     }
+                     bzero(sdbuf, 512);
+                 }
+            }
+             exit(0);
+             //get_request();
+            
         }
         if (recv_message.type == 0xC1) {
             printf("put");
