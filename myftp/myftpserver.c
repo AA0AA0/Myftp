@@ -77,6 +77,12 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xB1) {
             printf("get");
             printf("%d",recv_message.length);
+            char file[10];
+            if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
+                printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
+                exit(0);
+            }
+            printf("%s",file);
             exit(0);
             //get_request();
         }

@@ -65,7 +65,6 @@ int main(int argc, char** argv){
     */
     char buff[100];
     unsigned char temp[5] = "myftp";
-    unsigned char* protocol = temp;
     memset(buff,0,100);
     memset((void *)&message_box,0,sizeof(message_box));
     //LIST_REQUEST
@@ -100,23 +99,35 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"get") == 0)
     {
         char* payload;
-        if (argv[4][strlen(argv[4])-1] != '\0')
+        payload = (char *)malloc((strlen(argv[4])+1)*sizeof(char));
+        strcpy(payload,argv[4]);
+        /*
+        if (argv[4][strlen(argv[4])] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
             strcpy(payload,argv[4]);
             payload[strlen(argv[4])] = '\0';
+            printf("%d",strlen(payload));
+            printf("%d",sizeof(payload));
         }
         else
         {
             payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
             strcpy(payload,argv[4]);
         }
+         */
         unsigned char type = 0xB1;
         memcpy(message_box.protocol,temp,5);
         message_box.type = type;
         message_box.length = 5+1+4+strlen(payload);
         int len;
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
+        {
+            printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+            exit(0);
+        }
+        printf("%s",payload);
+        if((len=send(sd,payload,strlen(payload),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
