@@ -169,7 +169,7 @@ int main(int argc, char** argv){
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
-        file_exist = find_files(payload);
+        file_exist = find_files(payload,".");
         
         if (file_exist == 0)
             printf("File not found!\n");

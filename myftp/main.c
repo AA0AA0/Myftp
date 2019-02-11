@@ -46,7 +46,14 @@ void *pthread_prog(void *sDescriptor)
     if (recv_message.type == 0xA1){
         printf("list\n");
         list_files(reply_payload);
-        if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
+        reply_message.length = 10 + strlen(reply_payload);
+        memcpy(reply_message.protocol, temp, sizeof(temp));
+        reply_message.type = 0xA2;
+        if ((len = send(client_sd,(const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+            printf("Error in sending reply message\n");
+            pthread_exit(NULL);
+        }
+        if((len = send(client_sd, reply_payload, sizeof(reply_payload), 0)) < 0){
             printf("error in sending payload\n");
         }
         pthread_exit(NULL);
@@ -57,7 +64,7 @@ void *pthread_prog(void *sDescriptor)
         char file[10];
         if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
-            exit(0);
+            pthread_exit(NULL);
         }
         printf("%s",file);
         pthread_exit(NULL);
@@ -67,7 +74,7 @@ void *pthread_prog(void *sDescriptor)
     {
         printf("put");
         printf("%d",recv_message.length);
-        exit(0);
+        pthread_exit(NULL);
             //put_request();
     }
       /*  if(strcmp("exit",buff)==0){

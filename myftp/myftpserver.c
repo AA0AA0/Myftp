@@ -95,7 +95,7 @@ int main(int argc, char** argv){
             }
             printf("%s",file);
             
-            if (find_files(file) != 1){
+            if (find_files(file,"./data") != 1){
              // cannot find file
              
              reply_message.length = 10;
