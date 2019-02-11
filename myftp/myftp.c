@@ -50,8 +50,31 @@ char* list_files (char* payload)
     return NULL;
 }
 
-
-
-
-
-
+void* find_files(char* filename)
+{
+    dir = opendir("./data");
+    if (dir)
+    {
+        while ((dp = readdir(dir)) != NULL)
+        {
+            if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(filename, dp->d_name) == 0)
+            {
+                strcat(payload, dp->d_name);
+                strcat(payload, "\n");
+                printf("Successfully find file %s\n", dp->d_name);
+                return NULL;
+            }
+            
+        }
+        strcat(payload, "\0");
+        printf("%s\n", payload);
+        closedir(dir);
+        return NULL;
+    }
+    else
+    {
+        printf("Error in opening directory ./data !\n");
+    }
+    
+    return NULL;
+}
