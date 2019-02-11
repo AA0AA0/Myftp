@@ -52,24 +52,24 @@ int find_files(char* filename)
 {
     DIR *dir;
     struct dirent *dp;
-    dir = opendir(".");
+    dir = opendir("./data");
     if (dir)
     {
         while ((dp = readdir(dir)) != NULL)
         {
+            printf("%s\n", dp->d_name);
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(filename, dp->d_name) == 0)
             {
                 strcat(filename, dp->d_name);
                 printf("Successfully find file %s\n", dp->d_name);
+                return 1;
             }
         }
         closedir(dir);
-        return 1;
     }
     else
     {
         printf("Error in opening directory ./data !\n");
     }
-    
     return 0;
 }

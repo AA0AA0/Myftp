@@ -126,12 +126,13 @@ int main(int argc, char** argv){
     //PUT_REQUEST   (need to check if the file exist or not -- not complete)
     if (strcmp(argv[3],"put") == 0)
     {
+        
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
         file_exist = find_files(payload);
         if (file_exist == 0)
-            printf("File not found!");
+            printf("File not found!\n");
             
         
         /*
