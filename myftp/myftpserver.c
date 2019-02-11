@@ -132,7 +132,7 @@ int main(int argc, char** argv){
             list_files(reply_payload);
             printf("%s\n", reply_payload);
             if (strcmp(reply_payload, "") == 0) {
-                printf("Error in making payload\n");
+                printf("Empty payload\n");
                 exit(0);
             }
             if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
