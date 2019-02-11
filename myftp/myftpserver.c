@@ -14,7 +14,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <sys/stat.h>
-#include <dirent.h>
+# include <dirent.h>
 
 void list_request();
 void get_request();
