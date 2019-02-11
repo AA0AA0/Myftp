@@ -9,9 +9,9 @@ server: myftpserver.c
 	${CC} -o server myftpserver.o myftp.o ${LIB}
 
 client: myftpclient.c
-	${CC} -c myftpserver.o ${LIB}
+	${CC} -c myftpserver.c ${LIB}
 	${CC} -c myftp.c ${LIB}
-	${CC} -o client myftpclient.c ${LIB}
+	${CC} -o client myftpclient.o myftp.o ${LIB}
 
 clean:
 	rm server

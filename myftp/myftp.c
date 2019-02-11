@@ -17,7 +17,6 @@ char* list_files (char* payload)
     DIR *dir;
     struct dirent *dp;
     char * file_name;
-    
     dir = opendir("./data");
     if (dir)
     {
