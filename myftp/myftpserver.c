@@ -130,6 +130,7 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xA1){
             printf("list\n");
             list_files(reply_payload);
+            printf("%s\n", reply_payload);
             if (strcmp(reply_payload, "") == 0) {
                 printf("Error in making payload\n");
                 exit(0);
