@@ -22,7 +22,7 @@ void* list_files ()
     {
         while ((dp = readdir(dir)) != NULL)
         {
-            if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+            if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
             {
                 printf("%s\n", dp->d_name);
                 //return dp->d_name;

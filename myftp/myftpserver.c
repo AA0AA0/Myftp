@@ -13,12 +13,52 @@
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+# include <sys/stat.h>
+#include <dirent.h>
 
 # define PORT 12345
 void list_request();
 void get_request();
 void put_request();
 
+
+void* list_files ()
+{
+    int create_directory;
+    DIR *dir;
+    struct dirent *dp;
+    char * file_name;
+    
+    dir = opendir("./data");
+    if (dir)
+    {
+        while ((dp = readdir(dir)) != NULL)
+        {
+            if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+            {
+                printf("%s\n", dp->d_name);
+                //return dp->d_name;
+            }
+            
+        }
+        closedir(dir);
+        return NULL;
+    }
+    else if (ENOENT == errno)
+    {
+        create_directory = mkdir("./data", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if (create_directory != 0)
+        {
+            printf("Error in creating directory!\n");
+        }
+    }
+    else
+    {
+        printf("Error in opening directory ./data !\n");
+    }
+    
+    return NULL;
+}
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -73,6 +113,7 @@ int main(int argc, char** argv){
         }
         if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
             printf("wrong protocol\n");
+            printf("%s\n", recv_message.protocol);
             exit(0);
         }
         else
@@ -80,8 +121,8 @@ int main(int argc, char** argv){
             printf("protocol ok");
         }
         if (recv_message.type == 0xA1){
-            printf("list");
-            printf("%d",recv_message.length);
+            printf("list\n");
+            list_files();
             exit(0);
             //list_request();
         }
