@@ -119,7 +119,7 @@ int main(int argc, char** argv){
         }
         else
         {
-            printf("protocol ok");
+            printf("protocol ok\n");
         }
         struct message_s reply_message;
         memset(&reply_message, 0, sizeof(reply_message));
@@ -127,11 +127,6 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xA1){
             printf("list\n");
             list_files(reply_payload);
-            printf("%s", reply_payload);
-            if (strcmp(reply_payload, "") == 0) {
-                printf("No existing file in data\n");
-                exit(0);
-            }
             if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
                 printf("error in sending payload\n");
             }
