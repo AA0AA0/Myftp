@@ -38,12 +38,9 @@ char* list_files (char* payload)
             {
                 strcat(payload, dp->d_name);
                 strcat(payload, "\n");
-                printf("%s\n", dp->d_name);
                 //return dp->d_name;
             }
-            
         }
-        printf("%s", payload);
         strcat(payload, "\0");
         closedir(dir);
         return payload;
@@ -130,9 +127,9 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xA1){
             printf("list\n");
             list_files(reply_payload);
-            printf("%s\n", reply_payload);
+            printf("%s", reply_payload);
             if (strcmp(reply_payload, "") == 0) {
-                printf("Error in making payload\n");
+                printf("No existing file in data\n");
                 exit(0);
             }
             if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
