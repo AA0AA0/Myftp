@@ -51,7 +51,7 @@ int find_files(char* filename)
 {
     DIR *dir;
     struct dirent *dp;
-    dir = opendir("./data");
+    dir = opendir(".");
     if (dir)
     {
         while ((dp = readdir(dir)) != NULL)

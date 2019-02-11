@@ -133,6 +133,13 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xC1) {
             printf("put");
             printf("%d",recv_message.length);
+            reply_message.length = 10;
+            memcpy(reply_message.protocol, temp, 5);
+            reply_message.type = 0xC2;
+            if ((len = send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                printf("Error in sending reply message\n");
+                exit(1);
+            }
             exit(0);
             //put_request();
         }
