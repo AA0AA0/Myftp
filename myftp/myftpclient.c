@@ -126,6 +126,10 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"put") == 0)
     {
         char* payload;
+        payload = (char *)malloc(strlen(argv[4])*sizeof(char));
+        strcpy(payload,argv[4]);
+        find_files(payload);
+        /*
         if (argv[4][strlen(argv[4])-1] != '\0')
         {
             payload = (char *)malloc(strlen(argv[4])*sizeof(char));
@@ -137,6 +141,7 @@ int main(int argc, char** argv){
             payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
             strcpy(payload,argv[4]);
         }
+         */
         unsigned char type = 0xC1;
         memcpy(message_box.protocol,temp,5);
         message_box.type = type;

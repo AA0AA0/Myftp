@@ -16,4 +16,6 @@ struct message_s
 } __attribute__ ((packed));
 
 char* list_files (char* payload);
+
+int find_files(char* filename);
 #endif /* myftp_h */
