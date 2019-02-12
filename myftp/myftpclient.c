@@ -238,8 +238,7 @@ int main(int argc, char** argv){
             
             int filename_size, file_desc, file_size, client_sd, fs_block_sz;
             struct stat obj;
-            struct message_s recv_message, reply_message;
-            struct message_s file_header;
+            struct message_s recv_message, reply_message, file_header;
             char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
         
             filename_size = recv_message.length - 10;
@@ -250,7 +249,7 @@ int main(int argc, char** argv){
                 printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
                 exit(0);
             }
-            strcpy(file_name, "./data/");
+            strcpy(file_name, ".");
             strcat(file_name, file);
             if (find_files(file, 0) != 1){
                 reply_message.length = 10;
