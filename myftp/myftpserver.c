@@ -141,7 +141,6 @@ int main(int argc, char** argv){
              }
              exit(0);
              //get_request();
-            
         }
         if (recv_message.type == 0xC1) {
             printf("put");
