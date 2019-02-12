@@ -115,11 +115,19 @@ int main(int argc, char** argv){
                  stat(file_name, &obj);
                  file_desc = open(file_name, O_RDONLY);
                  file_size = obj.st_size;
-                 reply_message.length = 10 + file_size;
+                 reply_message.length = 10;
                  reply_message.type = 0xB2;
                  memcpy(reply_message.protocol, temp, 5);
                  send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0);
-                 send(client_sd, &file_size, sizeof(int), 0);
+                 struct message_s file_header;
+                 memset((void *)&file_header, 0, sizeof(file_header));
+                 memcpy(file_header.protocol, temp, 5);
+                 file_header.type = 0xFF;
+                 file_header.length = 10 + file_size;
+                 if ((len = send(client_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+                     printf("Cannot send file header\n");
+                     exit(0);
+                 }
 //               sendfile(client_sd, file_desc, NULL, file_size);
                  bzero(buff, 512);
                  while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {

@@ -156,18 +156,23 @@ int main(int argc, char** argv){
             printf("Cannot find the file\n");
             exit(0);
         }
-        
-        int size;
-        if ((len = recv(sd, &size, sizeof(int), 0))< 0) {
-            printf("Error in recv file size\n");
+        struct message_s file_data;
+        memset((void *)&file_data, 0, sizeof(file_data));
+        if ((len = recv(sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
+            printf("Error in recv file data header\n");
             exit(1);
         }
+        if (memcmp(file_data.protocol, temp, 5) != 0) {
+            printf("Wrong protocol\n");
+            exit(0);
+        }
+        int size;
+        size = file_data.length - 10;
         if (size == 0) {
             printf("The file is empty\n");
             exit(1);
         }
-    //    char* data = malloc(size);
-  //      printf("%d\n", size);
+
         char buff[512];
         bzero(buff, 512);
         int file_desc;
@@ -191,6 +196,7 @@ int main(int argc, char** argv){
                 exit(0);
             }
         }
+
         printf("Finished recv file\n");
         close(file_desc);
         exit(0);
