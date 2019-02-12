@@ -85,9 +85,7 @@ int main(int argc, char** argv){
         }
         if (recv_message.type == 0xB1) {
             int filename_size;
-            if (len = recv(client_sd, &filename_size, sizeof(int), 0) < 0) {
-                printf("Can't get size of file name\n");
-            }
+            filename_size = recv_message.length - 10;
             char *file;
             file = (char *)malloc(filename_size * sizeof(char));
             printf("%d\n", filename_size);
