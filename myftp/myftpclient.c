@@ -238,9 +238,29 @@ int main(int argc, char** argv){
             
             int filename_size, file_desc, file_size, client_sd, fs_block_sz;
             struct stat obj;
+            struct message_s recv_message, reply_message;
             struct message_s file_header;
             char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
-            
+        
+            filename_size = recv_message.length - 10;
+            char *file;
+            file = (char *)malloc(filename_size * sizeof(char));
+            printf("%d\n", filename_size);
+            if((len=recv(client_sd,file,filename_size,0))<0){
+                printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
+                exit(0);
+            }
+            strcpy(file_name, "./data/");
+            strcat(file_name, file);
+            if (find_files(file, 0) != 1){
+                reply_message.length = 10;
+                memcpy(reply_message.protocol, temp, 5);
+                reply_message.type = 0xB3;
+                if ((len = send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                    printf("Error in sending reply message\n");
+                    exit(1);
+                }
+            }
             stat(file_name, &obj);
             file_desc = open(file_name, O_RDONLY);
             file_size = obj.st_size;
