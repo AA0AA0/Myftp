@@ -17,11 +17,6 @@
 # include <sys/stat.h>
 # include <dirent.h>
 # include <sys/uio.h>
-# include <sys/sendfile.h>
-
-void list_request();
-void get_request();
-void put_request();
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -128,7 +123,6 @@ int main(int argc, char** argv){
 //               sendfile(client_sd, file_desc, NULL, file_size);
                  bzero(buff, 512);
                  while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
-                     printf("%d\n", fs_block_sz);
                      if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
                          printf("Error in sending buffer\n");
                          exit(0);
