@@ -166,20 +166,32 @@ int main(int argc, char** argv){
             printf("The file is empty\n");
             exit(1);
         }
-        char* data = malloc(size);
-        printf("%d\n", size);
+    //    char* data = malloc(size);
+  //      printf("%d\n", size);
+        char buff[512];
+        bzero(buff, 512);
         int file_desc;
         if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
             printf("Cannot create file");
             exit(0);
         }
-        if (recv(sd, data, size, 0) < 0) {
-            printf("Cannot recv payload\n");
-            exit(1);
+        int fr_block_sz = 0;
+        while ((fr_block_sz = recv(sd, buff, 512, 0)) > 0) {
+            int write_sz = write(file_desc, buff, fr_block_sz);
+            if (write_sz < fr_block_sz) {
+                printf("File write failed\n");
+                exit(0);
+            }
+            bzero(buff, 512);
+            if (fr_block_sz == 0 || fr_block_sz != 512) {
+                break;
+            }
+            if (fr_block_sz < 0) {
+                printf("Error in recv data\n");
+                exit(0);
+            }
         }
-        if (write(file_desc, data, size) < 0){
-            printf("Error in write\n");
-        }
+        printf("Finished recv file\n");
         close(file_desc);
         exit(0);
     }

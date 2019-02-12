@@ -114,7 +114,8 @@ int main(int argc, char** argv){
                 exit(0);
              }
              else {
-                 int file_desc, file_size;
+                 int file_desc, file_size, fs_block_sz;
+                 char buff[512];
                  struct stat obj;
                  stat(file_name, &obj);
                  file_desc = open(file_name, O_RDONLY);
@@ -124,7 +125,17 @@ int main(int argc, char** argv){
                  memcpy(reply_message.protocol, temp, 5);
                  send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0);
                  send(client_sd, &file_size, sizeof(int), 0);
-                 sendfile(client_sd, file_desc, NULL, file_size);
+//               sendfile(client_sd, file_desc, NULL, file_size);
+                 bzero(buff, 512);
+                 while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+                     printf("%d\n", fs_block_sz);
+                     if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
+                         printf("Error in sending buffer\n");
+                         exit(0);
+                     }
+                     bzero(buff, 512);
+                 }
+                 printf("The file is successfully sent\n");
                  close(file_desc);
                  exit(0);
              }
