@@ -14,6 +14,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
+# include <sys/stat.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -71,6 +72,7 @@ int main(int argc, char** argv){
     memset((void *)&message_box,0,sizeof(message_box));
     struct message_s server_reply;
     memset((void *)& server_reply, 0, sizeof(server_reply));
+    
     //LIST_REQUEST
     if (strcmp(argv[3],"list") == 0)
     {
@@ -237,6 +239,35 @@ int main(int argc, char** argv){
                 printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
                 exit(0);
             }
+            
+            int filename_size, file_desc, file_size, client_sd, fs_block_sz;
+            struct stat obj;
+            struct message_s file_header;
+            char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
+            
+            stat(file_name, &obj);
+            file_desc = open(file_name, O_RDONLY);
+            file_size = obj.st_size;
+            memset((void *)&file_header, 0, sizeof(file_header));
+            memcpy(file_header.protocol, temp, 5);
+            file_header.type = 0xFF;
+            file_header.length = 10 + file_size;
+            if ((len = send(client_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+                printf("Cannot send file header\n");
+                exit(0);
+            }
+            //               sendfile(client_sd, file_desc, NULL, file_size);
+            bzero(buff, 512);
+            while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+                if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
+                    printf("Error in sending buffer\n");
+                    exit(0);
+                }
+                bzero(buff, 512);
+            }
+            printf("The file is successfully sent\n");
+            close(file_desc);
+            
         }
         
 
