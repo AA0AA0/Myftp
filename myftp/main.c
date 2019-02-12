@@ -9,6 +9,7 @@
 # include <unistd.h>
 # include <string.h>
 # include <errno.h>
+# include <fcntl.h>
 # include <sys/socket.h>
 # include <sys/types.h>
 # include <netinet/in.h>
@@ -17,6 +18,7 @@
 # include <dirent.h>
 # include <pthread.h>
 # include <assert.h>
+# include <sys/uio.h>
 
 void *pthread_prog(void *sDescriptor) 
 {
@@ -40,26 +42,82 @@ void *pthread_prog(void *sDescriptor)
     {
         printf("protocol ok\n");
     }
+    printf("halo\n");
     struct message_s reply_message;
     memset(&reply_message, 0, sizeof(reply_message));
     char reply_payload[1024] = "";
     if (recv_message.type == 0xA1){
         printf("list\n");
         list_files(reply_payload);
-        if(send(client_sd, reply_payload, sizeof(reply_payload), 0) < 0){
+        reply_message.length = 10 + strlen(reply_payload);
+        memcpy(reply_message.protocol, temp, sizeof(temp));
+        reply_message.type = 0xA2;
+        if ((len = send(client_sd,(const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+            printf("Error in sending reply message\n");
+            pthread_exit(NULL);
+        }
+        if((len = send(client_sd, reply_payload, sizeof(reply_payload), 0)) < 0){
             printf("error in sending payload\n");
         }
         pthread_exit(NULL);
     }
     if (recv_message.type == 0xB1) {
-        printf("get");
-        printf("%d",recv_message.length);
-        char file[10];
-        if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
+        int filename_size;
+        filename_size = recv_message.length - 10;
+        char *file;
+        file = (char *)malloc(filename_size * sizeof(char));
+        memset(file,0,sizeof(file));
+        if((len=recv(client_sd,file,filename_size,0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
-            exit(0);
+            pthread_exit(NULL);
         }
+        char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
+        strcpy(file_name, "./data/");
+        strcat(file_name, file);
         printf("%s",file);
+        if (find_files(file, 0) != 1){
+            reply_message.length = 10;
+            memcpy(reply_message.protocol, temp, 5);
+            reply_message.type = 0xB3;
+            if ((len = send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                printf("Error in sending reply message\n");
+                pthread_exit(NULL);
+            }
+            pthread_exit(NULL);
+        }
+        else {
+            int file_desc, file_size, fs_block_sz;
+            char buff[512];
+            struct stat obj;
+            stat(file_name, &obj);
+            file_desc = open(file_name, O_RDONLY);
+            file_size = obj.st_size;
+            reply_message.length = 10;
+            reply_message.type = 0xB2;
+            memcpy(reply_message.protocol, temp, 5);
+            send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0);
+            struct message_s file_header;
+            memset((void *)&file_header, 0, sizeof(file_header));
+            memcpy(file_header.protocol, temp, 5);
+            file_header.type = 0xFF;
+            file_header.length = 10 + file_size;
+            if ((len = send(client_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+                printf("Cannot send file header\n");
+                pthread_exit(NULL);
+            }
+            //               sendfile(client_sd, file_desc, NULL, file_size);
+            bzero(buff, 512);
+            while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+                if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
+                    printf("Error in sending buffer\n");
+                    pthread_exit(NULL);
+                }
+                bzero(buff, 512);
+            }
+            printf("The file is successfully sent\n");
+            close(file_desc);
+            pthread_exit(NULL);
+        }
         pthread_exit(NULL);
         //get_request();
     }
@@ -67,7 +125,7 @@ void *pthread_prog(void *sDescriptor)
     {
         printf("put");
         printf("%d",recv_message.length);
-        exit(0);
+        pthread_exit(NULL);
             //put_request();
     }
       /*  if(strcmp("exit",buff)==0){
@@ -99,18 +157,15 @@ int main(int argc, char** argv)
         printf("listen error: %s (Errno:%d)\n",strerror(errno),errno);
         exit(0);
     }
-	while(1)
+    
+    int client_sd;
+    struct sockaddr_in client_addr;
+    int addr_len=sizeof(client_addr);
+	while(client_sd=accept(sd,(struct sockaddr *) &client_addr,&addr_len))
 	{
-		int client_sd;
-		struct sockaddr_in client_addr;
-		int addr_len=sizeof(client_addr);
 		pthread_t worker;
-    	if((client_sd=accept(sd,(struct sockaddr *) &client_addr,&addr_len))<0)
-    	{
-        	printf("accept erro: %s (Errno:%d)\n",strerror(errno),errno);
-        	exit(0);
-        }
         pthread_create(&worker, NULL, pthread_prog, &client_sd);
         printf("hi");
+        pthread_join(worker,NULL);
 	}
 }
