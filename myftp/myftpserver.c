@@ -88,7 +88,7 @@ int main(int argc, char** argv){
             filename_size = recv_message.length - 10;
             char *file;
             file = (char *)malloc(filename_size * sizeof(char));
-            printf("%d\n", filename_size);
+            memset(file, 0, sizeof(file));
             if((len=recv(client_sd,file,filename_size,0))<0){
                 printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
                 exit(0);
