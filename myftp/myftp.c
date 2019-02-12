@@ -61,7 +61,7 @@ int find_files(char* filename, int flag)
     {
         while ((dp = readdir(dir)) != NULL)
         {
-            printf("%s\n", dp->d_name);
+            //printf("%s\n", dp->d_name);
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(filename, dp->d_name) == 0)
             {
                 printf("Successfully find file %s\n", dp->d_name);
