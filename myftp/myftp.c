@@ -11,6 +11,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+void print_bytes(void *ptr, int size)
+{
+    unsigned char *p = ptr;
+    int i;
+    for (i=0; i<size; i++) {
+        printf("%02hhX ", p[i]);
+    }
+    printf("\n");
+}
+
 char* list_files (char* payload)
 {
     int create_directory;
@@ -49,6 +59,7 @@ char* list_files (char* payload)
 
 int find_files(char* filename, int flag)
 {
+    printf("arrive");
     DIR *dir;
     struct dirent *dp;
     if (flag == 1) {
@@ -65,6 +76,8 @@ int find_files(char* filename, int flag)
             if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(filename, dp->d_name) == 0)
             {
                 printf("Successfully find file %s\n", dp->d_name);
+                //printf("%p\n",dp->d_name);
+                print_bytes(dp->d_name, sizeof(dp->d_name));
                 closedir(dir);
                 return 1;
             }

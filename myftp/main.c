@@ -43,9 +43,12 @@ void *pthread_prog(void *sDescriptor)
     }
     else
     {
-        printf("protocol ok\n");
+        //printf("protocol ok\n");
+        //printf("%s\n",recv_message.protocol);
+        //printf("%u\n",recv_message.type);
+        //printf("%u\n",recv_message.length);
     }
-    printf("halo\n");
+    //printf("halo\n");
     struct message_s reply_message;
     memset(&reply_message, 0, sizeof(reply_message));
     char reply_payload[1024] = "";
@@ -71,7 +74,8 @@ void *pthread_prog(void *sDescriptor)
         filename_size = recv_message.length - 10;
         char *file;
         file = (char *)malloc(filename_size * sizeof(char));
-        memset(file,0,sizeof(file));
+        memset(file,0,(filename_size * sizeof(char))+1);        //key changes
+        //print_bytes(file, sizeof(file) + 10);
         if((len=recv(client_sd,file,filename_size,0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
             free(sDescriptor);
@@ -80,8 +84,9 @@ void *pthread_prog(void *sDescriptor)
         char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
         strcpy(file_name, "./data/");
         strcat(file_name, file);
-        printf("%s\n",file);
-        printf("%d\n",filename_size);
+        //printf("%s\n",file);
+        //print_bytes(file, sizeof(file) + 10);
+        //printf("%d\n",filename_size);
         if (find_files(file, 0) != 1){
             reply_message.length = 10;
             memcpy(reply_message.protocol, temp, 5);
@@ -130,8 +135,6 @@ void *pthread_prog(void *sDescriptor)
             free(sDescriptor);
             pthread_exit(NULL);
         }
-        free(sDescriptor);
-        pthread_exit(NULL);
         //get_request();
     }
     if (recv_message.type == 0xC1) 
