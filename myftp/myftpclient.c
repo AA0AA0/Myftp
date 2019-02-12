@@ -255,7 +255,7 @@ int main(int argc, char** argv){
             strcat(file_name2, payload);
             
             int fr_block_sz = 0;
-            file_desc2 = open("./testcase6", O_RDONLY);
+            file_desc2 = open(file_name2, O_RDONLY);
 
             while ((fr_block_sz = read(file_desc2, buff, 512)) != 0)
             {
