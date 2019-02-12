@@ -25,7 +25,6 @@ char* list_files (char* payload)
             {
                 strcat(payload, dp->d_name);
                 strcat(payload, "\n");
-                //return dp->d_name;
             }
         }
         strcat(payload, "\0");
@@ -44,15 +43,20 @@ char* list_files (char* payload)
     {
         printf("Error in opening directory ./data !\n");
     }
-    
+    closedir(dir);
     return NULL;
 }
 
-int find_files(char* filename, char* addr)
+int find_files(char* filename, int flag)
 {
     DIR *dir;
     struct dirent *dp;
-    dir = opendir(addr);
+    if (flag == 1) {
+        dir = opendir(".");
+    }
+    else {
+        dir = opendir("./data");
+    }
     if (dir)
     {
         while ((dp = readdir(dir)) != NULL)

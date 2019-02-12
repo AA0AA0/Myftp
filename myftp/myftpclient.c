@@ -13,6 +13,7 @@
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+# include <fcntl.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -110,9 +111,8 @@ int main(int argc, char** argv){
     //GET_REQUEST
     if (strcmp(argv[3],"get") == 0)
     {
-        char* payload;
-        payload = (char *)malloc((strlen(argv[4])+1)*sizeof(char));
-        strcpy(payload,argv[4]);
+        char * payload;
+        payload = argv[4];
         /*
         if (argv[4][strlen(argv[4])] != '\0')
         {
@@ -133,34 +133,73 @@ int main(int argc, char** argv){
         message_box.type = type;
         message_box.length = 5+1+4+strlen(payload);
         int len;
+        int fn_size = strlen(argv[4]);
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        if((len=send(sd,payload,strlen(payload),0))<0)
+        if ((len = send(sd, &fn_size, sizeof(int), 0)) < 0) {
+            printf("Error in sending filename size\n");
+            exit(0);
+        }
+        if((len=send(sd, payload,strlen(payload),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        FILE *fr = fopen(argv[4], "a");
-        if (fr == NULL) {
-            printf("Cannot open file\n");
+        if ((len = recv(sd, (const char *)&server_reply, sizeof(server_reply), 0))<0) {
+            printf("Cannot recv server reply");
             exit(0);
         }
-        char recvbuf[512];
-        if ((len = recv(sd, recvbuf, sizeof(recvbuf), 0))< 0) {
-            printf("Cannot recv file\n");
+        if (server_reply.type == 0xB3) {
+            printf("Cannot find the file\n");
             exit(0);
         }
-        int write_size;
-        if (write_size = fwrite(recvbuf, sizeof(char), 512, fr) < 0){
-            printf("Error in writing file\n");
+        struct message_s file_data;
+        memset((void *)&file_data, 0, sizeof(file_data));
+        if ((len = recv(sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
+            printf("Error in recv file data header\n");
+            exit(1);
+        }
+        if (memcmp(file_data.protocol, temp, 5) != 0) {
+            printf("Wrong protocol\n");
             exit(0);
         }
-        fclose(fr);
-        
-        
+        int size;
+        size = file_data.length - 10;
+        if (size == 0) {
+            printf("The file is empty\n");
+            exit(1);
+        }
+
+        char buff[512];
+        bzero(buff, 512);
+        int file_desc;
+        if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
+            printf("Cannot create file");
+            exit(0);
+        }
+        int fr_block_sz = 0;
+        while ((fr_block_sz = recv(sd, buff, 512, 0)) > 0) {
+            int write_sz = write(file_desc, buff, fr_block_sz);
+            if (write_sz < fr_block_sz) {
+                printf("File write failed\n");
+                exit(0);
+            }
+            bzero(buff, 512);
+            if (fr_block_sz == 0 || fr_block_sz != 512) {
+                break;
+            }
+            if (fr_block_sz < 0) {
+                printf("Error in recv data\n");
+                exit(0);
+            }
+        }
+
+        printf("Finished recv file\n");
+        close(file_desc);
+        exit(0);
     }
     //PUT_REQUEST
     if (strcmp(argv[3],"put") == 0)
@@ -169,7 +208,7 @@ int main(int argc, char** argv){
         char* payload;
         payload = (char *)malloc(strlen(argv[4])*sizeof(char));
         strcpy(payload,argv[4]);
-        file_exist = find_files(payload,".");
+        file_exist = find_files(payload, 1);
         
         if (file_exist == 0)
             printf("File not found!\n");

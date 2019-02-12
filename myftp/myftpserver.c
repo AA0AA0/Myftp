@@ -9,16 +9,14 @@
 # include <unistd.h>
 # include <string.h>
 # include <errno.h>
+# include <fcntl.h>
 # include <sys/socket.h>
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <sys/stat.h>
 # include <dirent.h>
-
-void list_request();
-void get_request();
-void put_request();
+# include <sys/uio.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -86,18 +84,21 @@ int main(int argc, char** argv){
             exit(0);
         }
         if (recv_message.type == 0xB1) {
-            printf("get");
-            printf("%d",recv_message.length);
-            char file[10];
-            if((len=recv(client_sd,(char*)&file,sizeof(file),0))<0){
+            int filename_size;
+            if (len = recv(client_sd, &filename_size, sizeof(int), 0) < 0) {
+                printf("Can't get size of file name\n");
+            }
+            char *file;
+            file = (char *)malloc(filename_size * sizeof(char));
+            printf("%d\n", filename_size);
+            if((len=recv(client_sd,file,filename_size,0))<0){
                 printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
                 exit(0);
             }
-            printf("%s",file);
-            
-            if (find_files(file,"./data") != 1){
-             // cannot find file
-             
+            char* file_name = (char *)malloc((7+ filename_size) * sizeof(char));
+            strcpy(file_name, "./data/");
+            strcat(file_name, file);
+            if (find_files(file, 0) != 1){
              reply_message.length = 10;
              memcpy(reply_message.protocol, temp, 5);
              reply_message.type = 0xB3;
@@ -108,24 +109,38 @@ int main(int argc, char** argv){
                 exit(0);
              }
              else {
-                 char fname[512] = "./data/";
-                 strcat(fname, file);
-                 char sdbuf[512];
-                 FILE *fs = fopen(fname, "r");
-                 if (fs == NULL) {
-                     printf("Error in open file");
-                     exit(1);
+                 int file_desc, file_size, fs_block_sz;
+                 char buff[512];
+                 struct stat obj;
+                 stat(file_name, &obj);
+                 file_desc = open(file_name, O_RDONLY);
+                 file_size = obj.st_size;
+                 reply_message.length = 10;
+                 reply_message.type = 0xB2;
+                 memcpy(reply_message.protocol, temp, 5);
+                 send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0);
+                 struct message_s file_header;
+                 memset((void *)&file_header, 0, sizeof(file_header));
+                 memcpy(file_header.protocol, temp, 5);
+                 file_header.type = 0xFF;
+                 file_header.length = 10 + file_size;
+                 if ((len = send(client_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+                     printf("Cannot send file header\n");
+                     exit(0);
                  }
-                 bzero(sdbuf, 512);
-                 int fs_block_sz;
-                 while((fs_block_sz = fread(sdbuf, sizeof(char), 512, fs))>0) {
-                     if(send(client_sd, sdbuf, fs_block_sz, 0) < 0){
-                         fprintf(stderr, "ERROR: Failed to send file %s. (errno = %d)\n", fname, errno);
-                         exit(1);
+//               sendfile(client_sd, file_desc, NULL, file_size);
+                 bzero(buff, 512);
+                 while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+                     if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
+                         printf("Error in sending buffer\n");
+                         exit(0);
                      }
-                     bzero(sdbuf, 512);
+                     bzero(buff, 512);
                  }
-            }
+                 printf("The file is successfully sent\n");
+                 close(file_desc);
+                 exit(0);
+             }
              exit(0);
              //get_request();
             
@@ -133,6 +148,13 @@ int main(int argc, char** argv){
         if (recv_message.type == 0xC1) {
             printf("put");
             printf("%d",recv_message.length);
+            reply_message.length = 10;
+            memcpy(reply_message.protocol, temp, 5);
+            reply_message.type = 0xC2;
+            if ((len = send(client_sd, (const char *)&reply_message, sizeof(reply_message), 0))< 0) {
+                printf("Error in sending reply message\n");
+                exit(1);
+            }
             exit(0);
             //put_request();
         }
