@@ -254,8 +254,6 @@ int main(int argc, char** argv){
             strcpy(file_name2, "./");
             strcat(file_name2, payload);
             
-            printf("%s\n", file_name1);
-            
             int fr_block_sz = 0;
             file_desc2 = open("./testcase6", O_RDONLY);
 
