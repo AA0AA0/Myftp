@@ -139,10 +139,6 @@ int main(int argc, char** argv){
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        if ((len = send(sd, &fn_size, sizeof(int), 0)) < 0) {
-            printf("Error in sending filename size\n");
-            exit(0);
-        }
         if((len=send(sd, payload,strlen(payload),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
