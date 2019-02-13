@@ -160,10 +160,9 @@ int main(int argc, char** argv){
                 printf("Cannot recv server reply");
                 exit(0);
             }
-            printf("%s", payload1);
+            
             char payload[1024] = "./data/";
             strcat(payload, payload1);
-            printf("%s", payload);
             struct message_s file_data;
             memset((void *)&file_data, 0, sizeof(file_data));
             if ((len = recv(client_sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
@@ -181,7 +180,7 @@ int main(int argc, char** argv){
                 printf("The file is empty\n");
                 exit(1);
             }
-            if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
+            if ((file_desc = open(payload, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
                 printf("Cannot create file");
                 exit(0);
             }

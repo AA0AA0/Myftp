@@ -178,7 +178,7 @@ int main(int argc, char** argv){
         char buff[512];
         bzero(buff, 512);
         int file_desc;
-        if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
+        if ((file_desc = open(payload, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
             printf("Cannot create file");
             exit(0);
         }
