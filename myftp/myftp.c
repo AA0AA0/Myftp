@@ -59,7 +59,7 @@ char* list_files (char* payload)
 
 int find_files(char* filename, int flag)
 {
-    printf("arrive");
+ //   printf("arrive");
     DIR *dir;
     struct dirent *dp;
     if (flag == 1) {
@@ -77,7 +77,7 @@ int find_files(char* filename, int flag)
             {
                 printf("Successfully find file %s\n", dp->d_name);
                 //printf("%p\n",dp->d_name);
-                print_bytes(dp->d_name, sizeof(dp->d_name));
+ //               print_bytes(dp->d_name, sizeof(dp->d_name));
                 closedir(dir);
                 return 1;
             }
