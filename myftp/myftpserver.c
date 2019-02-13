@@ -152,6 +152,57 @@ int main(int argc, char** argv){
                 printf("Error in sending reply message\n");
                 exit(1);
             }
+            char payload1[1024] = "";
+            char buff[512];
+            bzero(buff, 512);
+            int file_desc;
+            if ((len = recv(client_sd, (const char *)&payload1, sizeof(payload1), 0))<0) {
+                printf("Cannot recv server reply");
+                exit(0);
+            }
+            
+            char payload[1024] = "./data/";
+            strcat(payload, payload1);
+            struct message_s file_data;
+            memset((void *)&file_data, 0, sizeof(file_data));
+            if ((len = recv(client_sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
+                printf("Error in recv file data header\n");
+                exit(1);
+            }
+            if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
+                printf("wrong protocol\n");
+                printf("%s\n", recv_message.protocol);
+                exit(0);
+            }
+            int size;
+            size = file_data.length - 10;
+            if (size == 0) {
+                printf("The file is empty\n");
+                exit(1);
+            }
+            if ((file_desc = open(payload, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
+                printf("Cannot create file");
+                exit(0);
+            }
+            int fr_block_sz = 0;
+            while ((fr_block_sz = recv(client_sd, buff, 512, 0)) > 0) {
+                int write_sz = write(file_desc, buff, fr_block_sz);
+                if (write_sz < fr_block_sz) {
+                    printf("File write failed\n");
+                    exit(0);
+                }
+                bzero(buff, 512);
+                if (fr_block_sz == 0 || fr_block_sz != 512) {
+                    break;
+                }
+                if (fr_block_sz < 0) {
+                    printf("Error in recv data\n");
+                    exit(0);
+                }
+            }
+            
+            printf("Finished recv file\n");
+            close(file_desc);
             exit(0);
             //put_request();
         }
