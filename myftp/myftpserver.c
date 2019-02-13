@@ -152,7 +152,51 @@ int main(int argc, char** argv){
                 printf("Error in sending reply message\n");
                 exit(1);
             }
-            exit(0);
+            char payload[1024] = "./data/";
+            char buff[512];
+            bzero(buff, 512);
+            int file_desc;
+            
+            struct message_s file_data;
+            memset((void *)&file_data, 0, sizeof(file_data));
+            if ((len = recv(sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
+                printf("Error in recv file data header\n");
+                exit(1);
+            }
+            if (memcmp(file_data.protocol, temp, 5) != 0) {
+                printf("Wrong protocol\n");
+                exit(0);
+            }
+            int size;
+            size = file_data.length - 10;
+            if (size == 0) {
+                printf("The file is empty\n");
+                exit(1);
+            }
+
+            if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
+                printf("Cannot create file");
+                exit(0);
+            }
+            int fr_block_sz = 0;
+            while ((fr_block_sz = recv(sd, buff, 512, 0)) > 0) {
+                int write_sz = write(file_desc, buff, fr_block_sz);
+                if (write_sz < fr_block_sz) {
+                    printf("File write failed\n");
+                    exit(0);
+                }
+                bzero(buff, 512);
+                if (fr_block_sz == 0 || fr_block_sz != 512) {
+                    break;
+                }
+                if (fr_block_sz < 0) {
+                    printf("Error in recv data\n");
+                    exit(0);
+                }
+            }
+            
+            printf("Finished recv file\n");
+            close(file_desc);
             //put_request();
         }
       /*  if(strcmp("exit",buff)==0){

@@ -15,6 +15,7 @@
 # include <arpa/inet.h>
 # include <fcntl.h>
 # include <sys/stat.h>
+# include <pthread.h>
 
 int main(int argc, char** argv){
     int sd=socket(AF_INET,SOCK_STREAM,0);
@@ -215,69 +216,60 @@ int main(int argc, char** argv){
             printf("File not found!\n");
         else
         {
-            unsigned char type = 0xC1;
-            memcpy(message_box.protocol,temp,5);
-            message_box.type = type;
-            message_box.length = 5+1+4+strlen(payload);
-            int len;
-            int fn_size = strlen(argv[4]);
-            if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
-            {
-                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
-                exit(0);
-            }
-            
-            struct message_s recv_message;
-            int filename_size;
-            filename_size = recv_message.length - 10;
-            char *file;
-            file = (char *)malloc(filename_size * sizeof(char));
-            printf("%d\n", filename_size);
-            /*
-            if((len=recv(client_sd,file,filename_size,0))<0){
-                printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
-                printf("%d", len);
-                exit(0);
-            }
-            */
-            char* file_name1 = (char *)malloc((10 + filename_size) * sizeof(char));
-            strcpy(file_name1, "./data/");
-            strcat(file_name1, payload);
-
-            int file_desc1, file_desc2, sd;
+            int server_sd, len;
+            int addr_len=sizeof(server_addr);
+            struct message_s reply_message;
+            memset(&reply_message, 0, sizeof(reply_message));
+            int file_desc, file_size, fs_block_sz;
             char buff[512];
             struct stat obj;
-            stat(file_name1, &obj);
-            if ((file_desc1 = open(file_name1, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR| S_IWUSR)) < 0) {
-                printf("Cannot create file");
-                exit(0);
-            }
             
-            char* file_name2 = (char *)malloc((7+ filename_size) * sizeof(char));
-            strcpy(file_name2, "./");
-            strcat(file_name2, payload);
+            stat(payload, &obj);
+            file_desc = open(payload, O_RDONLY);
+            file_size = obj.st_size;
             
-            int fr_block_sz = 0;
-            file_desc2 = open(file_name2, O_RDONLY);
-
-            while ((fr_block_sz = read(file_desc2, buff, 512)) != 0)
+            unsigned char type = 0xC1;
+            memcpy(reply_message.protocol,temp,5);
+            reply_message.type = type;
+            reply_message.length = 5+1+4+strlen(payload)+1;
+            int fn_size = strlen(argv[4])+1;
+            if((len=send(sd,(const char *)&reply_message,sizeof(reply_message),0))<0)
             {
-                write(file_desc1, buff, fr_block_sz);
-                bzero(buff, 512);
-                if (fr_block_sz == 0 || fr_block_sz != 512) {
-                    break;
-                }
-                if (fr_block_sz < 0) {
-                    printf("Error in recv data\n");
-                    exit(0);
-                }
+                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+                pthread_exit(0);
+            }
+            if((len=send(sd, payload,fn_size,0))<0)
+            {
+                printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
+                pthread_exit(0);
+            }
+            if ((len = recv(sd, (const char *)&server_reply, sizeof(server_reply), 0))<0) {
+                printf("Cannot recv server reply");
+                pthread_exit(0);
             }
             
-            printf("Finished upload file\n");
-            close(file_desc1);
-            close(file_desc2);
-            exit(0);
+            struct message_s file_header;
+            memset((void *)&file_header, 0, sizeof(file_header));
+            memcpy(file_header.protocol, temp, 5);
+            file_header.type = 0xFF;
+            file_header.length = 10 + file_size;
+            if ((len = send(server_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+                printf("Cannot send file header\n");
+                pthread_exit(0);
+            }
             
+            //               sendfile(client_sd, file_desc, NULL, file_size);
+            bzero(buff, 512);
+            while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+                if ((len = send(server_sd, buff, fs_block_sz, 0)) < 0) {
+                    printf("Error in sending buffer\n");
+                    pthread_exit(NULL);
+                }
+                bzero(buff, 512);
+            }
+            printf("The file is successfully sent\n");
+            close(file_desc);
+            pthread_exit(NULL);
         }
     }
     return 0;
