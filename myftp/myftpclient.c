@@ -114,7 +114,10 @@ int main(int argc, char** argv){
     if (strcmp(argv[3],"get") == 0)
     {
         char * payload;
-        payload = argv[4];
+        payload = (char *)malloc((strlen(argv[4])+1)*sizeof(char));
+        memset(payload,0,strlen(argv[4])+1);
+        strcpy(payload, argv[4]);
+        payload[strlen(argv[4])] = '\0';
         /*
         if (argv[4][strlen(argv[4])] != '\0')
         {
@@ -129,19 +132,19 @@ int main(int argc, char** argv){
             payload = (char *)malloc(strlen(argv[4])-1*sizeof(char));
             strcpy(payload,argv[4]);
         }
-         */
+        */
         unsigned char type = 0xB1;
         memcpy(message_box.protocol,temp,5);
         message_box.type = type;
-        message_box.length = 5+1+4+strlen(payload);
+        message_box.length = 5+1+4+strlen(payload)+1;
         int len;
-        int fn_size = strlen(argv[4]);
+        int fn_size = strlen(argv[4])+1;
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);
         }
-        if((len=send(sd, payload,strlen(payload),0))<0)
+        if((len=send(sd, payload,fn_size,0))<0)
         {
             printf("Send Error: %s (Errno:%d)\n",strerror(errno),errno);
             exit(0);

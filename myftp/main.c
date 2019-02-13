@@ -74,7 +74,7 @@ void *pthread_prog(void *sDescriptor)
         filename_size = recv_message.length - 10;
         char *file;
         file = (char *)malloc(filename_size * sizeof(char));
-        memset(file,0,(filename_size * sizeof(char))+1);        //key changes
+        memset(file,0,(filename_size * sizeof(char)));        //key changes
         //print_bytes(file, sizeof(file) + 10);
         if((len=recv(client_sd,file,filename_size,0))<0){
             printf("receive error: %s (Errno:%d)\n", strerror(errno),errno);
