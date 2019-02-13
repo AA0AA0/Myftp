@@ -253,15 +253,15 @@ int main(int argc, char** argv){
             memcpy(file_header.protocol, temp, 5);
             file_header.type = 0xFF;
             file_header.length = 10 + file_size;
-            if ((len = send(server_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
+            if ((len = send(sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
                 printf("Cannot send file header\n");
-                pthread_exit(0);
+                exit(0);
             }
             
             //               sendfile(client_sd, file_desc, NULL, file_size);
             bzero(buff, 512);
             while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
-                if ((len = send(server_sd, buff, fs_block_sz, 0)) < 0) {
+                if ((len = send(sd, buff, fs_block_sz, 0)) < 0) {
                     printf("Error in sending buffer\n");
                     pthread_exit(NULL);
                 }

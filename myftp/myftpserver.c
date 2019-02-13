@@ -152,19 +152,27 @@ int main(int argc, char** argv){
                 printf("Error in sending reply message\n");
                 exit(1);
             }
-            char payload[1024] = "./data/";
+            char payload1[1024] = "";
             char buff[512];
             bzero(buff, 512);
             int file_desc;
-            
+            if ((len = recv(client_sd, (const char *)&payload1, sizeof(payload1), 0))<0) {
+                printf("Cannot recv server reply");
+                exit(0);
+            }
+            printf("%s", payload1);
+            char payload[1024] = "./data/";
+            strcat(payload, payload1);
+            printf("%s", payload);
             struct message_s file_data;
             memset((void *)&file_data, 0, sizeof(file_data));
-            if ((len = recv(sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
+            if ((len = recv(client_sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
                 printf("Error in recv file data header\n");
                 exit(1);
             }
-            if (memcmp(file_data.protocol, temp, 5) != 0) {
-                printf("Wrong protocol\n");
+            if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
+                printf("wrong protocol\n");
+                printf("%s\n", recv_message.protocol);
                 exit(0);
             }
             int size;
@@ -173,13 +181,12 @@ int main(int argc, char** argv){
                 printf("The file is empty\n");
                 exit(1);
             }
-
             if ((file_desc = open(payload, O_CREAT | O_EXCL | O_WRONLY, 0666)) < 0) {
                 printf("Cannot create file");
                 exit(0);
             }
             int fr_block_sz = 0;
-            while ((fr_block_sz = recv(sd, buff, 512, 0)) > 0) {
+            while ((fr_block_sz = recv(client_sd, buff, 512, 0)) > 0) {
                 int write_sz = write(file_desc, buff, fr_block_sz);
                 if (write_sz < fr_block_sz) {
                     printf("File write failed\n");
@@ -197,6 +204,7 @@ int main(int argc, char** argv){
             
             printf("Finished recv file\n");
             close(file_desc);
+            exit(0);
             //put_request();
         }
       /*  if(strcmp("exit",buff)==0){
