@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EAC3DE332212F0FB004A457F /* myftpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = EAC3DE322212F0FB004A457F /* myftpserver.c */; };
-		EAC3DE352212F101004A457F /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = EAC3DE342212F101004A457F /* main.c */; };
+		EAC3DE332212F0FB004A457F /* myftpserver_single.c in Sources */ = {isa = PBXBuildFile; fileRef = EAC3DE322212F0FB004A457F /* myftpserver_single.c */; };
+		EAC3DE352212F101004A457F /* myftpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = EAC3DE342212F101004A457F /* myftpserver.c */; };
 		FADE04332209D19200BB57D1 /* myftp.c in Sources */ = {isa = PBXBuildFile; fileRef = FADE04322209D19200BB57D1 /* myftp.c */; };
 		FADE043C2209D2BD00BB57D1 /* myftpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = FADE043B2209D2BD00BB57D1 /* myftpclient.c */; };
 /* End PBXBuildFile section */
@@ -26,8 +26,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		EAC3DE322212F0FB004A457F /* myftpserver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = myftpserver.c; sourceTree = "<group>"; };
-		EAC3DE342212F101004A457F /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		EAC3DE322212F0FB004A457F /* myftpserver_single.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = myftpserver_single.c; sourceTree = "<group>"; };
+		EAC3DE342212F101004A457F /* myftpserver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = myftpserver.c; sourceTree = "<group>"; };
 		FADE042F2209D19200BB57D1 /* myftp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = myftp; sourceTree = BUILT_PRODUCTS_DIR; };
 		FADE04322209D19200BB57D1 /* myftp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = myftp.c; sourceTree = "<group>"; };
 		FADE04392209D1B800BB57D1 /* myftp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = myftp.h; sourceTree = "<group>"; };
@@ -67,8 +67,8 @@
 				FADE04322209D19200BB57D1 /* myftp.c */,
 				FADE04392209D1B800BB57D1 /* myftp.h */,
 				FADE043B2209D2BD00BB57D1 /* myftpclient.c */,
-				EAC3DE322212F0FB004A457F /* myftpserver.c */,
-				EAC3DE342212F101004A457F /* main.c */,
+				EAC3DE322212F0FB004A457F /* myftpserver_single.c */,
+				EAC3DE342212F101004A457F /* myftpserver.c */,
 			);
 			path = myftp;
 			sourceTree = "<group>";
@@ -129,8 +129,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EAC3DE352212F101004A457F /* main.c in Sources */,
-				EAC3DE332212F0FB004A457F /* myftpserver.c in Sources */,
+				EAC3DE352212F101004A457F /* myftpserver.c in Sources */,
+				EAC3DE332212F0FB004A457F /* myftpserver_single.c in Sources */,
 				FADE04332209D19200BB57D1 /* myftp.c in Sources */,
 				FADE043C2209D2BD00BB57D1 /* myftpclient.c in Sources */,
 			);
