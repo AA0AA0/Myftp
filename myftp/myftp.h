@@ -7,7 +7,7 @@
 #define myftp_h
 #include <dirent.h>
 #include <sys/types.h>
-
+#define BUFF_SIZE 1024
 struct message_s
 {
     unsigned char protocol[5];      /* protocol string (5 bytes) */

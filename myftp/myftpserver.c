@@ -97,8 +97,9 @@ void *pthread_prog(void *sDescriptor)
             pthread_exit(NULL);
         }
         else {
-            int file_desc, file_size, fs_block_sz;
-            char buff[512];
+            int file_desc, file_size, fs_block_sz, len_r;
+            char buff[BUFF_SIZE];
+            unsigned short check_sum;
             struct stat obj;
             stat(file_name, &obj);
             file_desc = open(file_name, O_RDONLY);
@@ -112,20 +113,44 @@ void *pthread_prog(void *sDescriptor)
             memcpy(file_header.protocol, temp, 5);
             file_header.type = 0xFF;
             file_header.length = 10 + file_size;
+            file_header.length = htonl(file_header.length);
             if ((len = send(client_sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
                 printf("Cannot send file header\n");
                 free(sDescriptor);
                 pthread_exit(NULL);
             }
             //               sendfile(client_sd, file_desc, NULL, file_size);
-            bzero(buff, 512);
-            while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+            bzero(buff, BUFF_SIZE);
+            while (1) {
+                if ((fs_block_sz = read(file_desc, buff, BUFF_SIZE)) <= 0) {
+                    break;
+                }
                 if ((len = send(client_sd, buff, fs_block_sz, 0)) < 0) {
-                    printf("Error in sending buffer\n");
+                    printf("Error in sending buffer, Error no:%d\n", errno);
+                    printf("%s\n", buff);
+                    printf("%d %d\n", len, fs_block_sz);
                     free(sDescriptor);
                     pthread_exit(NULL);
                 }
-                bzero(buff, 512);
+                if ((len_r = recv(client_sd, &check_sum , sizeof(int), 0)) < 0) {
+                    printf("Error in recv check sum\n");
+                    free(sDescriptor);
+                    pthread_exit(NULL);
+                }
+                else{
+                    check_sum = ntohs(check_sum);
+                    printf("%d\n", check_sum);
+                    if (check_sum != len) {
+                        lseek(file_desc, 0-len, SEEK_CUR);
+                    }
+                }
+                printf("%d %d\n", len, fs_block_sz);
+                bzero(buff, BUFF_SIZE);
+            }
+            if ((len = send(client_sd, buff ,BUFF_SIZE, 0))<0) {
+                printf("Cannot send E_O_F\n");
+                free(sDescriptor);
+                pthread_exit(NULL);
             }
             printf("The file is successfully sent\n");
             close(file_desc);
@@ -145,8 +170,8 @@ void *pthread_prog(void *sDescriptor)
             exit(1);
         }
         char payload1[1024] = "";
-        char buff[512];
-        bzero(buff, 512);
+        char buff[BUFF_SIZE];
+        bzero(buff, BUFF_SIZE);
         int file_desc;
         if ((len = recv(client_sd, (const char *)&payload1, sizeof(payload1), 0))<0) {
             printf("Cannot recv server reply");
@@ -159,31 +184,56 @@ void *pthread_prog(void *sDescriptor)
         memset((void *)&file_data, 0, sizeof(file_data));
         if ((len = recv(client_sd, (const char *)&file_data, sizeof(file_data), 0)) < 0) {
             printf("Error in recv file data header\n");
-            exit(1);
+            free(sDescriptor);
+            pthread_exit(NULL);
         }
         if (memcmp(recv_message.protocol, temp,sizeof(temp)) != 0) {
             printf("wrong protocol\n");
-            exit(0);
+            free(sDescriptor);
+            pthread_exit(NULL);
         }
         int size;
+        file_data.length = ntohl(file_data.length);
         size = file_data.length - 10;
+        printf("%d\n",size);
         if (size == 0) {
             printf("The file is empty\n");
-            exit(1);
+            free(sDescriptor);
+            pthread_exit(NULL);
         }
         if ((file_desc = open(payload, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
             printf("Cannot create file");
-            exit(0);
+            free(sDescriptor);
+            pthread_exit(NULL);
         }
         int fr_block_sz = 0;
-        while ((fr_block_sz = recv(client_sd, buff, 512, 0)) > 0) {
+        unsigned short check_sum;
+        while (1) {
+            if ((fr_block_sz = recv(client_sd, buff, BUFF_SIZE, 0)) <= 0) {
+                break;
+            }
+            printf("%d\n", fr_block_sz);
+            check_sum = (unsigned short) fr_block_sz;
+            check_sum = htons(check_sum);
+            if ((len = send(client_sd, &check_sum , sizeof(unsigned short), 0)) < 0) {
+                printf("Error in sending check sum\n");
+                exit(0);
+            }
+            if (check_sum != BUFF_SIZE) {
+                if (size - check_sum != 0) {
+                    continue;
+                }
+            }
             int write_sz = write(file_desc, buff, fr_block_sz);
             if (write_sz < fr_block_sz) {
                 printf("File write failed\n");
                 exit(0);
             }
-            bzero(buff, 512);
-            if (fr_block_sz == 0 || fr_block_sz != 512) {
+            printf("%d %d\n", write_sz, fr_block_sz);
+            size -= write_sz;
+            printf("size: %d\n", size);
+            bzero(buff, BUFF_SIZE);
+            if (size == 0 /*|| fr_block_sz != BUFF_SIZE*/) {
                 break;
             }
             if (fr_block_sz < 0) {
@@ -191,7 +241,12 @@ void *pthread_prog(void *sDescriptor)
                 exit(0);
             }
         }
-        
+        if (size != 0) {
+            printf("Recv file has wrong size\n");
+            printf("Remainig file size: %d\n", size);
+            free(sDescriptor);
+            pthread_exit(NULL);
+        }
         printf("Finished recv file\n");
         close(file_desc);
         free(sDescriptor);
@@ -235,7 +290,7 @@ int main(int argc, char** argv)
         new_sock = malloc(1);
         *new_sock = client_sd;
         pthread_create(&worker, NULL, pthread_prog, (void*) new_sock);
-        pthread_join(worker,NULL);
+//        pthread_join(worker,NULL);
         memset(&client_addr,0,sizeof(client_addr));
 	}
 }

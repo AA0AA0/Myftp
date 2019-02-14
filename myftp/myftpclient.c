@@ -138,6 +138,7 @@ int main(int argc, char** argv){
         memcpy(message_box.protocol,temp,5);
         message_box.type = type;
         message_box.length = 5+1+4+strlen(payload)+1;
+        message_box.length = htonl(message_box.length);
         int len;
         int fn_size = strlen(argv[4])+1;
         if((len=send(sd,(const char *)&message_box,sizeof(message_box),0))<0)
@@ -169,29 +170,48 @@ int main(int argc, char** argv){
             exit(0);
         }
         int size;
+        file_data.length = ntohl(file_data.length);
         size = file_data.length - 10;
         if (size == 0) {
             printf("The file is empty\n");
             exit(1);
         }
-
-        char buff[512];
-        bzero(buff, 512);
+        unsigned short check_sum;
+        char buff[BUFF_SIZE];
+        bzero(buff, BUFF_SIZE);
         int file_desc;
         if ((file_desc = open(payload, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
             printf("Cannot create file");
             exit(0);
         }
         int fr_block_sz = 0;
-        while ((fr_block_sz = recv(sd, buff, 512, 0)) > 0) {
+        while (1) {
+            if ((fr_block_sz = recv(sd, buff, BUFF_SIZE, 0)) <= 0) {
+                break;
+            }
+            
+            check_sum = (unsigned short) fr_block_sz;
+            check_sum = htons(check_sum);
+            printf("%d\n", check_sum);
+            if ((len = send(sd, &check_sum , sizeof(int), 0)) < 0) {
+                printf("Error in sending check sum\n");
+                exit(0);
+            }
+            if (fr_block_sz != BUFF_SIZE) {
+                if (size - fr_block_sz != 0) {
+                    continue;
+                }
+            }
             int write_sz = write(file_desc, buff, fr_block_sz);
             if (write_sz < fr_block_sz) {
                 printf("File write failed\n");
                 exit(0);
             }
+            printf("%d %d\n", write_sz, fr_block_sz);
             size -= write_sz;
-            bzero(buff, 512);
-            if (fr_block_sz == 0 || fr_block_sz != 512) {
+            printf("%d\n", size);
+            bzero(buff, BUFF_SIZE);
+            if (size == 0 /*|| fr_block_sz != BUFF_SIZE*/) {
                 break;
             }
             if (fr_block_sz < 0) {
@@ -201,6 +221,7 @@ int main(int argc, char** argv){
         }
         if (size != 0) {
             printf("Recv file has wrong size\n");
+            printf("The remaining file size: %d\n", size);
             exit(0);
         }
         printf("Finished recv file\n");
@@ -225,7 +246,7 @@ int main(int argc, char** argv){
             struct message_s reply_message;
             memset(&reply_message, 0, sizeof(reply_message));
             int file_desc, file_size, fs_block_sz;
-            char buff[512];
+            char buff[BUFF_SIZE];
             struct stat obj;
             
             stat(payload, &obj);
@@ -236,6 +257,7 @@ int main(int argc, char** argv){
             memcpy(reply_message.protocol,temp,5);
             reply_message.type = type;
             reply_message.length = 5+1+4+strlen(payload)+1;
+            reply_message.length = htonl(reply_message.length);
             int fn_size = strlen(argv[4])+1;
             if((len=send(sd,(const char *)&reply_message,sizeof(reply_message),0))<0)
             {
@@ -257,19 +279,41 @@ int main(int argc, char** argv){
             memcpy(file_header.protocol, temp, 5);
             file_header.type = 0xFF;
             file_header.length = 10 + file_size;
+            file_header.length = htonl(file_header.length);
+            printf("%d\n", file_size);
             if ((len = send(sd, (const char*)&file_header, sizeof(file_header), 0)) < 0) {
                 printf("Cannot send file header\n");
                 exit(0);
             }
-            
+            int len_r;
+            unsigned short check_sum;
             //               sendfile(client_sd, file_desc, NULL, file_size);
-            bzero(buff, 512);
-            while ((fs_block_sz = read(file_desc, buff, 512)) > 0) {
+            bzero(buff, BUFF_SIZE);
+            fs_block_sz = 0;
+            while (1) {
+                if ((fs_block_sz = read(file_desc, buff, BUFF_SIZE)) <= 0) {
+                    break;
+                }
                 if ((len = send(sd, buff, fs_block_sz, 0)) < 0) {
-                    printf("Error in sending buffer\n");
+                    printf("Error in sending buffer, Error no:%d\n", errno);
+                    printf("%s\n", buff);
+                    printf("%d %d\n", len, fs_block_sz);
+                    free(sd);
                     pthread_exit(NULL);
                 }
-                bzero(buff, 512);
+                if ((len_r = recv(sd, &check_sum , sizeof(unsigned short), 0)) < 0) {
+                    printf("Error in recv check sum\n");
+                    exit(0);
+                }
+                else{
+                    check_sum = ntohs(check_sum);
+                    printf("%d\n", check_sum);
+                    if (check_sum != len) {
+                        lseek(file_desc, 0-len, SEEK_CUR);
+                    }
+                }
+                printf("%d %d\n", len, fs_block_sz);
+                bzero(buff, BUFF_SIZE);
             }
             printf("The file is successfully sent\n");
             close(file_desc);
