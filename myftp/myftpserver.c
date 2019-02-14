@@ -191,6 +191,7 @@ int main(int argc, char** argv){
                     printf("File write failed\n");
                     exit(0);
                 }
+                size -= write_sz;
                 bzero(buff, 512);
                 if (fr_block_sz == 0 || fr_block_sz != 512) {
                     break;
@@ -200,7 +201,10 @@ int main(int argc, char** argv){
                     exit(0);
                 }
             }
-            
+            if (size != 0) {
+                printf("Recv file has wrong size\n");
+                exit(0);
+            }
             printf("Finished recv file\n");
             close(file_desc);
             exit(0);
