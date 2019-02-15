@@ -311,6 +311,7 @@ int main(int argc, char** argv){
                     if (check_sum != len) {
                         lseek(file_desc, 0-len, SEEK_CUR);
                     }
+                    
                 }
                 printf("%d %d\n", len, fs_block_sz);
                 bzero(buff, BUFF_SIZE);

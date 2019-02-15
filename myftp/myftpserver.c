@@ -219,8 +219,8 @@ void *pthread_prog(void *sDescriptor)
                 printf("Error in sending check sum\n");
                 exit(0);
             }
-            if (check_sum != BUFF_SIZE) {
-                if (size - check_sum != 0) {
+            if (fr_block_sz != BUFF_SIZE) {
+                if (size - fr_block_sz != 0) {
                     continue;
                 }
             }
